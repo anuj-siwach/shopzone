@@ -1,4 +1,3 @@
-// server/utils/sendMail.js
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -9,41 +8,18 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/*
 const sendMail = async (to, subject, html) => {
   try {
-    // TEMPORARY RENDER FREE-TIER BYPASS:
-    // We are stopping Nodemailer from trying to leave the server.
-    /*
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `ShopZone <${process.env.EMAIL_USER}>`,
-      to, subject, html,
-    });
-    */
-    
+    // DEV MODE: Bypassing real email to avoid Render timeouts
     console.log(`\n\n🎯 --- DEV MODE: EMAIL BYPASSED ---`);
     console.log(`📫 To: ${to}`);
     console.log(`📝 Subject: ${subject}`);
-    console.log(`🔍 OTP is hidden in this HTML: ${html.substring(0, 300)}...`);
+    console.log(`🔍 OTP is hidden in this HTML: \n${html}\n`);
     console.log(`------------------------------------\n\n`);
-    
   } catch (err) {
     console.error('Email send error:', err.message);
   }
 };
-const sendMail = async (to, subject, html) => {
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `ShopZone <${process.env.EMAIL_USER}>`,
-      to, subject, html,
-    });
-    console.log(`📧 Email sent to ${to}`);
-  } catch (err) {
-    console.error('Email send error:', err.message);
-    // Don't throw — email failure shouldn't break the request
-  }
-};
-*/
 
 const otpTemplate = (otp, name) => `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border:1px solid #eee;border-radius:8px;">
@@ -67,6 +43,5 @@ const orderTemplate = (order, name) => `
   </div>
   <p style="color:#888;font-size:12px;">ShopZone | Developer: Anuj | anujsiwach002@gmail.com</p>
 </div>`;
-
 
 module.exports = { sendMail, otpTemplate, orderTemplate };
