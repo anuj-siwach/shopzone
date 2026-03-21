@@ -2,9 +2,7 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host:   process.env.EMAIL_HOST,
-  port:   parseInt(process.env.EMAIL_PORT) || 587,
-  secure: false,
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -46,5 +44,6 @@ const orderTemplate = (order, name) => `
   </div>
   <p style="color:#888;font-size:12px;">ShopZone | Developer: Anuj | anujsiwach002@gmail.com</p>
 </div>`;
+
 
 module.exports = { sendMail, otpTemplate, orderTemplate };
