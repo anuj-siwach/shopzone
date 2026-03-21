@@ -9,6 +9,28 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+/*
+const sendMail = async (to, subject, html) => {
+  try {
+    // TEMPORARY RENDER FREE-TIER BYPASS:
+    // We are stopping Nodemailer from trying to leave the server.
+    /*
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || `ShopZone <${process.env.EMAIL_USER}>`,
+      to, subject, html,
+    });
+    */
+    
+    console.log(`\n\n🎯 --- DEV MODE: EMAIL BYPASSED ---`);
+    console.log(`📫 To: ${to}`);
+    console.log(`📝 Subject: ${subject}`);
+    console.log(`🔍 OTP is hidden in this HTML: ${html.substring(0, 300)}...`);
+    console.log(`------------------------------------\n\n`);
+    
+  } catch (err) {
+    console.error('Email send error:', err.message);
+  }
+};
 const sendMail = async (to, subject, html) => {
   try {
     await transporter.sendMail({
@@ -21,6 +43,7 @@ const sendMail = async (to, subject, html) => {
     // Don't throw — email failure shouldn't break the request
   }
 };
+*/
 
 const otpTemplate = (otp, name) => `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border:1px solid #eee;border-radius:8px;">
