@@ -1,23 +1,21 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Initialize Resend with your API key
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendMail = async (to, subject, html) => {
   try {
-    // DEV MODE: Bypassing real email to avoid Render timeouts
-    console.log(`\n\n🎯 --- DEV MODE: EMAIL BYPASSED ---`);
-    console.log(`📫 To: ${to}`);
-    console.log(`📝 Subject: ${subject}`);
-    console.log(`🔍 OTP is hidden in this HTML: \n${html}\n`);
-    console.log(`------------------------------------\n\n`);
+    const data = await resend.emails.send({
+      // ⚠️ IMPORTANT: While on the free tier without a custom domain, 
+      // you MUST use this exact 'from' address provided by Resend:
+      from: 'ShopZone <onboarding@resend.dev>', 
+      to: to,
+      subject: subject,
+      html: html,
+    });
+    console.log(`📧 SUCCESS: Email sent to ${to} via Resend! ID:`, data.id);
   } catch (err) {
-    console.error('Email send error:', err.message);
+    console.error('❌ Resend email error:', err.message);
   }
 };
 
