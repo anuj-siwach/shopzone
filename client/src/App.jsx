@@ -534,37 +534,34 @@ function LoginPage({ onNavigate }) {
 import { loginUser } from './store/userSlice';
 
 // ──────────────────────────────────────────────────────────────
-// REGISTER PAGE
+// REGISTER PAGE — No OTP, direct login after registration
 // ──────────────────────────────────────────────────────────────
 function RegisterPage({ onNavigate }) {
-  const [form, setForm] = useState({ name: '', email: '', password: '', mobile: '' });
-  const [step, setStep] = useState('form'); // form | otp
-  const [otp, setOtp]   = useState('');
-  const [msg, setMsg]   = useState({ type: '', text: '' });
+  const [form, setForm]       = useState({ name: '', email: '', password: '', mobile: '' });
+  const [msg, setMsg]         = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async e => {
     e.preventDefault();
-    if (form.password.length < 8) return setMsg({ type: 'err', text: 'Password must be at least 8 characters' });
+    if (form.password.length < 8)
+      return setMsg({ type: 'err', text: 'Password must be at least 8 characters' });
     setLoading(true);
     try {
-      await api.post('/api/auth/register', form);
-      setStep('otp');
-      setMsg({ type: 'ok', text: 'OTP sent to your email. Check inbox/spam.' });
-    } catch (err) { setMsg({ type: 'err', text: err.response?.data?.msg || 'Registration failed' }); }
-    setLoading(false);
-  };
-
-  const handleOTP = async e => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { data } = await api.post('/api/auth/verify-otp', { email: form.email, otp });
-      localStorage.setItem('sz_token', data.token);
-      localStorage.setItem('sz_user', JSON.stringify(data.user));
-      setMsg({ type: 'ok', text: 'Email verified! Redirecting…' });
-      setTimeout(() => onNavigate('home'), 1000);
-    } catch (err) { setMsg({ type: 'err', text: err.response?.data?.msg || 'Invalid OTP' }); }
+      const { data } = await api.post('/api/auth/register', form);
+      // Save token and user — direct login, no OTP needed
+      if (data.token) {
+        localStorage.setItem('sz_token', data.token);
+        localStorage.setItem('sz_user', JSON.stringify(data.user));
+        setMsg({ type: 'ok', text: 'Account created! Welcome to ShopZone!' });
+        setTimeout(() => onNavigate('home'), 800);
+      } else {
+        // Server created account but no token yet (fallback)
+        setMsg({ type: 'ok', text: 'Account created! Please login.' });
+        setTimeout(() => onNavigate('login'), 1000);
+      }
+    } catch (err) {
+      setMsg({ type: 'err', text: err.response?.data?.msg || 'Registration failed. Please try again.' });
+    }
     setLoading(false);
   };
 
@@ -574,25 +571,33 @@ function RegisterPage({ onNavigate }) {
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div className="logo" style={{ display: 'inline', fontSize: 28 }}>shop<span>Zone</span></div>
         </div>
-        <h2>{step === 'form' ? 'Create Account' : 'Verify Email'}</h2>
-        <p>{step === 'form' ? 'Join ShopZone today' : `Enter the OTP sent to ${form.email}`}</p>
+        <h2>Create Account</h2>
+        <p>Join ShopZone today — it's free!</p>
         {msg.text && <div className={msg.type === 'ok' ? 'form-ok' : 'form-err'}>{msg.text}</div>}
-        {step === 'form' ? (
-          <form onSubmit={handleRegister}>
-            <div className="form-group"><label>Full Name</label><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} required placeholder="Anuj" /></div>
-            <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} required placeholder="anujsiwach002@gmail.com" /></div>
-            <div className="form-group"><label>Mobile (optional)</label><input value={form.mobile} onChange={e => setForm(f=>({...f,mobile:e.target.value}))} placeholder="7015542002" /></div>
-            <div className="form-group"><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} required placeholder="Min 8 characters" /></div>
-            <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Creating…' : 'Create Account'}</button>
-          </form>
-        ) : (
-          <form onSubmit={handleOTP}>
-            <div className="form-group"><label>OTP Code</label><input value={otp} onChange={e => setOtp(e.target.value)} required placeholder="6-digit OTP" maxLength={6} style={{textAlign:'center',fontSize:24,letterSpacing:8}} /></div>
-            <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Verifying…' : 'Verify Email'}</button>
-            <button type="button" className="btn-secondary" onClick={async () => { await api.post('/api/auth/resend-otp', {email:form.email}); setMsg({type:'ok',text:'New OTP sent!'}); }}>Resend OTP</button>
-          </form>
-        )}
-        <button className="form-link" onClick={() => onNavigate('login')}>Already have an account? Sign in →</button>
+        <form onSubmit={handleRegister}>
+          <div className="form-group">
+            <label>Full Name</label>
+            <input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} required placeholder="Anuj Siwach" />
+          </div>
+          <div className="form-group">
+            <label>Email</label>
+            <input type="email" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} required placeholder="you@email.com" />
+          </div>
+          <div className="form-group">
+            <label>Mobile (optional)</label>
+            <input value={form.mobile} onChange={e => setForm(f=>({...f,mobile:e.target.value}))} placeholder="9876543210" />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input type="password" value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} required placeholder="Min 8 characters" />
+          </div>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Creating account…' : 'Create Account'}
+          </button>
+        </form>
+        <button className="form-link" onClick={() => onNavigate('login')}>
+          Already have an account? Sign in →
+        </button>
       </div>
     </div>
   );
