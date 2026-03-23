@@ -134,7 +134,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
   try {
     const order = await Order.findOne({ _id: req.params.id, userId: req.user.id });
     if (!order) return res.status(404).json({ msg: 'Order not found' });
-    if (!['confirmed', 'processing'].includes(order.status))
+    if (!['pending', 'confirmed', 'processing'].includes(order.status))
       return res.status(400).json({ msg: `Cannot cancel order with status "${order.status}"` });
 
     order.status      = 'cancelled';
