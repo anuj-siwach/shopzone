@@ -519,7 +519,7 @@ function LoginPage({ onNavigate }) {
         <p>Access your account</p>
         {error && <div className="form-err">{error}</div>}
         <form onSubmit={handleSubmit}>
-          <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required placeholder="you@email.com" /></div>
+          <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required placeholder="Enter your email" /></div>
           <div className="form-group"><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required placeholder="••••••••" /></div>
           <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Signing in…' : 'Sign In'}</button>
         </form>
@@ -577,15 +577,15 @@ function RegisterPage({ onNavigate }) {
         <form onSubmit={handleRegister}>
           <div className="form-group">
             <label>Full Name</label>
-            <input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} required placeholder="Anuj Siwach" />
+            <input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} required placeholder="Enter your full name" />
           </div>
           <div className="form-group">
             <label>Email</label>
-            <input type="email" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} required placeholder="you@email.com" />
+            <input type="email" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} required placeholder="Enter your email" />
           </div>
           <div className="form-group">
             <label>Mobile (optional)</label>
-            <input value={form.mobile} onChange={e => setForm(f=>({...f,mobile:e.target.value}))} placeholder="9876543210" />
+            <input value={form.mobile} onChange={e => setForm(f=>({...f,mobile:e.target.value}))} placeholder="Enter mobile number" />
           </div>
           <div className="form-group">
             <label>Password</label>
