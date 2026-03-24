@@ -1,9 +1,11 @@
 // server/seed/seedProducts.js
+// Run: node seed/seedProducts.js
 require('dotenv').config({ path: '../.env' });
 const mongoose = require('mongoose');
 const Product  = require('../models/Product');
 const User     = require('../models/User');
 const Category = require('../models/Category');
+
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/shopzone';
 
 const categories = [
@@ -13,290 +15,638 @@ const categories = [
   { name: 'Books',          slug: 'books',         sortOrder: 4 },
   { name: 'Sports',         slug: 'sports',        sortOrder: 5 },
   { name: 'Toys & Games',   slug: 'toys-games',    sortOrder: 6 },
-  { name: 'Beauty',         slug: 'beauty',        sortOrder: 7 },
-  { name: 'Furniture',      slug: 'furniture',     sortOrder: 8 },
-  { name: 'Grocery',        slug: 'grocery',       sortOrder: 9 },
-  { name: 'Automotive',     slug: 'automotive',    sortOrder: 10 },
 ];
 
-// 300 products — every product has a UNIQUE image URL
-const products = [
+const baseProducts = [
+  // ── ELECTRONICS ─────────────────────────────────────────────
+  {
+    title: 'Samsung Galaxy S24 Ultra 5G (256GB, Titanium Gray)',
+    description: 'The ultimate Galaxy with 200MP camera, Snapdragon 8 Gen 3, 5000mAh battery, and built-in S Pen.',
+    price: 129999, discountPrice: 109999, category: 'Electronics', brand: 'Samsung',
+    stock: 50, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80',
+      'https://images.unsplash.com/photo-1678911820864-e2c567c655d7?w=500&q=80',
+      'https://images.unsplash.com/photo-1610945265064-3e9148d5635e?w=500&q=80'
+    ],
+    tags: ['smartphone','5g','samsung'],
+    specs: new Map([['RAM','12GB'],['Storage','256GB'],['Camera','200MP'],['Battery','5000mAh']])
+  },
+  {
+    title: 'Apple iPhone 15 (128GB, Black)',
+    description: 'Apple iPhone 15 with A16 Bionic chip, 48MP main camera, USB-C connector and Dynamic Island.',
+    price: 79900, discountPrice: 74900, category: 'Electronics', brand: 'Apple',
+    stock: 75, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=80',
+      'https://images.unsplash.com/photo-1696446701796-da61225697cc?w=500&q=80',
+      'https://images.unsplash.com/photo-1512054502232-10a0a035d672?w=500&q=80'
+    ],
+    tags: ['iphone','apple','ios'],
+    specs: new Map([['RAM','6GB'],['Storage','128GB'],['Camera','48MP'],['Chip','A16 Bionic']])
+  },
+  {
+    title: 'OnePlus 12 5G (256GB, Flowy Emerald)',
+    description: 'Snapdragon 8 Gen 3, 50MP Hasselblad triple camera, 100W SUPERVOOC fast charging, 5400mAh battery.',
+    price: 64999, discountPrice: 59999, category: 'Electronics', brand: 'OnePlus',
+    stock: 40, isPrime: false, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=500&q=80',
+      'https://images.unsplash.com/photo-1611791484670-ce19b801d192?w=500&q=80',
+      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&q=80'
+    ],
+    tags: ['oneplus','android','5g'],
+    specs: new Map([['RAM','16GB'],['Storage','256GB'],['Battery','5400mAh'],['Charging','100W']])
+  },
+  {
+    title: 'Dell Inspiron 15 Laptop (i5, 16GB RAM, 512GB SSD)',
+    description: 'Intel Core i5-1335U, 16GB DDR4 RAM, 512GB SSD, 15.6" FHD display, Windows 11 Home.',
+    price: 74990, discountPrice: 59990, category: 'Electronics', brand: 'Dell',
+    stock: 25, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=500&q=80',
+      'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&q=80',
+      'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=500&q=80'
+    ],
+    tags: ['laptop','dell','windows','intel'],
+    specs: new Map([['Processor','Intel i5-1335U'],['RAM','16GB'],['Storage','512GB SSD'],['Display','15.6" FHD']])
+  },
+  {
+    title: 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones',
+    description: 'Industry-leading noise cancellation, 30-hour battery, Auto NC Optimizer, Crystal Sound quality.',
+    price: 29990, discountPrice: 19990, category: 'Electronics', brand: 'Sony',
+    stock: 60, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80',
+      'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=500&q=80',
+      'https://images.unsplash.com/photo-1528148343865-51218c4a13e6?w=500&q=80'
+    ],
+    tags: ['headphones','wireless','anc','sony'],
+    specs: new Map([['Battery','30 hours'],['Connectivity','Bluetooth 5.2'],['Weight','250g']])
+  },
+  {
+    title: 'LG 55" OLED 4K Smart TV (55C3PSA)',
+    description: 'LG OLED C3 with α9 AI Processor, Dolby Vision IQ, webOS, HDMI 2.1. Perfect for movies and gaming.',
+    price: 189990, discountPrice: 129990, category: 'Electronics', brand: 'LG',
+    stock: 15, isPrime: false, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80',
+      'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=500&q=80',
+      'https://images.unsplash.com/photo-1601944177325-f8867652837f?w=500&q=80'
+    ],
+    tags: ['tv','oled','4k','smart-tv'],
+    specs: new Map([['Display','55" OLED 4K'],['Refresh Rate','120Hz'],['HDR','Dolby Vision']])
+  },
+  {
+    title: 'Apple AirPods Pro 2nd Gen with MagSafe Case',
+    description: 'H2 chip, Adaptive Audio, Personalised Spatial Audio, up to 2x more Active Noise Cancellation.',
+    price: 24900, discountPrice: 19900, category: 'Electronics', brand: 'Apple',
+    stock: 80, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=500&q=80',
+      'https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=500&q=80',
+      'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=500&q=80'
+    ],
+    tags: ['airpods','apple','wireless','earbuds'],
+    specs: new Map([['Battery','6hrs + 24hrs case'],['Chip','H2'],['Water Resistance','IPX4']])
+  },
+  {
+    title: 'Canon EOS R50 Mirrorless Camera (Body Only)',
+    description: '24.2MP APS-C sensor, Dual Pixel CMOS AF II, 4K video, lightweight 375g body. Perfect for beginners.',
+    price: 75990, discountPrice: 64990, category: 'Electronics', brand: 'Canon',
+    stock: 20, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=500&q=80',
+      'https://images.unsplash.com/photo-1516724562728-afc824a36e84?w=500&q=80',
+      'https://images.unsplash.com/photo-1527011045970-179cbf2dc8dc?w=500&q=80'
+    ],
+    tags: ['camera','mirrorless','canon','4k'],
+    specs: new Map([['Sensor','24.2MP APS-C'],['Video','4K 30fps'],['Weight','375g']])
+  },
+  {
+    title: 'iPad Air 5th Gen (256GB, Wi-Fi, Space Gray)',
+    description: 'Apple M1 chip, 10.9-inch Liquid Retina display, 12MP front camera with Center Stage, Touch ID.',
+    price: 74900, discountPrice: 69900, category: 'Electronics', brand: 'Apple',
+    stock: 35, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500&q=80',
+      'https://images.unsplash.com/photo-1554650503-4929ee5ff2de?w=500&q=80',
+      'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=500&q=80'
+    ],
+    tags: ['ipad','apple','tablet'],
+    specs: new Map([['Chip','M1'],['Display','10.9" Liquid Retina'],['Storage','256GB'],['Camera','12MP']])
+  },
+  {
+    title: 'Logitech MX Master 3S Wireless Mouse',
+    description: '8000 DPI MagSpeed scroll, quiet clicks, ergonomic design, works on any surface including glass.',
+    price: 9995, discountPrice: 7495, category: 'Electronics', brand: 'Logitech',
+    stock: 90, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&q=80',
+      'https://images.unsplash.com/photo-1615663245857-314b9a8bd287?w=500&q=80',
+      'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=500&q=80'
+    ],
+    tags: ['mouse','wireless','logitech','productivity'],
+    specs: new Map([['DPI','200-8000'],['Battery','70 days'],['Connectivity','Bluetooth + USB'],['Buttons','7']])
+  },
+  {
+    title: 'Samsung 27" Curved Gaming Monitor (165Hz, 1ms)',
+    description: '27-inch Full HD curved display, 165Hz refresh rate, 1ms response time, AMD FreeSync, VA panel.',
+    price: 24990, discountPrice: 17990, category: 'Electronics', brand: 'Samsung',
+    stock: 30, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&q=80',
+      'https://images.unsplash.com/photo-1586952518485-11b180e92764?w=500&q=80',
+      'https://images.unsplash.com/photo-1542393545-10f5cde2c810?w=500&q=80'
+    ],
+    tags: ['monitor','gaming','samsung','curved'],
+    specs: new Map([['Size','27 inch'],['Refresh Rate','165Hz'],['Response Time','1ms'],['Panel','VA']])
+  },
+  {
+    title: 'JBL Flip 6 Portable Bluetooth Speaker',
+    description: 'JBL Pro Sound with 2 JBL drivers, powerful bass radiator, IP67 waterproof and dustproof, 12hr battery.',
+    price: 11999, discountPrice: 7999, category: 'Electronics', brand: 'JBL',
+    stock: 65, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&q=80',
+      'https://images.unsplash.com/photo-1589003071536-811c051284ce?w=500&q=80',
+      'https://images.unsplash.com/photo-1545454675-3531b543be5d?w=500&q=80'
+    ],
+    tags: ['speaker','bluetooth','jbl','portable'],
+    specs: new Map([['Battery','12 hours'],['Water Resistance','IP67'],['Connectivity','Bluetooth 5.1']])
+  },
 
-// ══════════════════════════════════════════════════════
-// ELECTRONICS — 80 products
-// ══════════════════════════════════════════════════════
-{ title:'Samsung Galaxy S24 Ultra 5G 256GB Titanium Gray', brand:'Samsung', category:'Electronics', price:129999, discountPrice:109999, stock:50, isPrime:true,  isFeatured:true,  description:'200MP camera, Snapdragon 8 Gen 3, built-in S Pen, 5000mAh battery.', images:['https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&q=80'] },
-{ title:'Apple iPhone 15 Pro 128GB Natural Titanium',       brand:'Apple',   category:'Electronics', price:134900, discountPrice:129900, stock:60, isPrime:true,  isFeatured:true,  description:'A17 Pro chip, 48MP main camera, Action button, USB-C connector.', images:['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80'] },
-{ title:'OnePlus 12 5G 256GB Flowy Emerald',                brand:'OnePlus', category:'Electronics', price:64999,  discountPrice:59999,  stock:40, isPrime:false, isFeatured:true,  description:'Snapdragon 8 Gen 3, Hasselblad camera, 100W SUPERVOOC charging.', images:['https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=600&q=80'] },
-{ title:'Google Pixel 8 Pro 256GB Obsidian',                brand:'Google',  category:'Electronics', price:106999, discountPrice:89999,  stock:30, isPrime:true,  isFeatured:false, description:'Tensor G3 chip, 50MP camera, 7 years of OS updates guaranteed.', images:['https://images.unsplash.com/photo-1598327105854-c8674faddf79?w=600&q=80'] },
-{ title:'Xiaomi 14 Ultra 512GB Black',                      brand:'Xiaomi',  category:'Electronics', price:99999,  discountPrice:89999,  stock:25, isPrime:false, isFeatured:false, description:'Leica optics, 1-inch Sony IMX989 sensor, 90W HyperCharge.', images:['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80'] },
-{ title:'Nothing Phone 2 12GB 256GB White',                 brand:'Nothing', category:'Electronics', price:44999,  discountPrice:39999,  stock:18, isPrime:false, isFeatured:true,  description:'Glyph Interface, Snapdragon 8+ Gen 1, 50W fast charging.', images:['https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=600&q=80'] },
-{ title:'Vivo X100 Pro 256GB Asteroid Black',               brand:'Vivo',    category:'Electronics', price:89999,  discountPrice:79999,  stock:20, isPrime:false, isFeatured:false, description:'Zeiss optics, Dimensity 9300, 100W FlashCharge.', images:['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80'] },
-{ title:'Motorola Edge 40 Pro 256GB Black',                 brand:'Motorola',category:'Electronics', price:54999,  discountPrice:44999,  stock:30, isPrime:false, isFeatured:false, description:'Snapdragon 8 Gen 2, 50MP OIS camera, 125W TurboPower.', images:['https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=600&q=80'] },
-{ title:'Realme GT 5 Pro 256GB Navigator Beige',            brand:'Realme',  category:'Electronics', price:49999,  discountPrice:44999,  stock:45, isPrime:true,  isFeatured:false, description:'Snapdragon 8 Gen 3, 50MP main camera, 100W SuperVOOC.', images:['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80'] },
-{ title:'iQOO 12 5G 256GB Legend Edition',                  brand:'iQOO',    category:'Electronics', price:52999,  discountPrice:49999,  stock:22, isPrime:true,  isFeatured:false, description:'Snapdragon 8 Gen 3, Zeiss optics, 120W FlashCharge.', images:['https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&q=80'] },
+  // ── FASHION ─────────────────────────────────────────────────
+  {
+    title: "Levi's Men's 511 Slim Fit Jeans (Dark Indigo)",
+    description: "Levi's 511 slim fit, sits below waist, slim through thigh and leg. 99% cotton stretch denim.",
+    price: 3999, discountPrice: 2399, category: 'Fashion', brand: "Levi's",
+    stock: 150, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1542272604-787c3835535d?w=500&q=80',
+      'https://images.unsplash.com/photo-1582552938357-32b906df40cb?w=500&q=80',
+      'https://images.unsplash.com/photo-1604198453316-ce13be1a2c5a?w=500&q=80'
+    ],
+    tags: ['jeans','mens','levis','denim'],
+    specs: new Map([['Fit','Slim'],['Material','99% Cotton'],['Wash','Dark Indigo']])
+  },
+  {
+    title: 'Nike Air Max 270 Running Shoes (White/Red)',
+    description: 'Largest heel Air unit for all-day comfort. Mesh upper for breathability, foam midsole for cushioning.',
+    price: 11995, discountPrice: 8995, category: 'Fashion', brand: 'Nike',
+    stock: 100, isPrime: false, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80',
+      'https://images.unsplash.com/photo-1605340581176-bf1059f13c63?w=500&q=80',
+      'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=500&q=80'
+    ],
+    tags: ['shoes','nike','running','sports'],
+    specs: new Map([['Closure','Lace-Up'],['Material','Mesh + Synthetic'],['Technology','Air Max']])
+  },
+  {
+    title: 'Ray-Ban Aviator Classic Sunglasses (Gold/Green)',
+    description: 'Iconic Ray-Ban Aviator with 58mm crystal green lenses, light gold frame. 100% UV protection.',
+    price: 9490, discountPrice: 7490, category: 'Fashion', brand: 'Ray-Ban',
+    stock: 45, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&q=80',
+      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&q=80',
+      'https://images.unsplash.com/photo-1508296695146-257a814050b4?w=500&q=80'
+    ],
+    tags: ['sunglasses','rayban','aviator'],
+    specs: new Map([['Lens','G-15 Crystal Green'],['Frame','Gold Metal'],['UV Protection','100%']])
+  },
+  {
+    title: "Tommy Hilfiger Men's Classic Polo Shirt (Navy)",
+    description: "Iconic Tommy polo in 100% soft pima cotton. Regular fit, ribbed collar, signature flag emblem.",
+    price: 3999, discountPrice: 2499, category: 'Fashion', brand: 'Tommy Hilfiger',
+    stock: 80, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=500&q=80',
+      'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=500&q=80',
+      'https://images.unsplash.com/photo-1578681994506-b8f463449011?w=500&q=80'
+    ],
+    tags: ['polo','tommy','mens'],
+    specs: new Map([['Material','100% Pima Cotton'],['Fit','Regular']])
+  },
+  {
+    title: "Women's Floral Kurti with Palazzo Set",
+    description: "Beautiful printed cotton kurti with matching palazzo pants. Perfect for festive occasions and daily wear.",
+    price: 1999, discountPrice: 999, category: 'Fashion', brand: 'Biba',
+    stock: 120, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&q=80',
+      'https://images.unsplash.com/photo-1583391733958-d25e07fac04f?w=500&q=80',
+      'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80'
+    ],
+    tags: ['kurti','women','ethnic','palazzo'],
+    specs: new Map([['Material','Cotton'],['Occasion','Casual / Festive'],['Care','Machine Wash']])
+  },
+  {
+    title: 'Adidas Ultraboost 23 Running Shoes (Black)',
+    description: 'BOOST midsole for incredible energy return, Primeknit+ upper, Continental rubber outsole for grip.',
+    price: 17999, discountPrice: 12999, category: 'Fashion', brand: 'Adidas',
+    stock: 55, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1539185441755-769473a23570?w=500&q=80',
+      'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=500&q=80',
+      'https://images.unsplash.com/photo-1584735174965-48c48d7028a9?w=500&q=80'
+    ],
+    tags: ['shoes','adidas','running','ultraboost'],
+    specs: new Map([['Technology','BOOST Midsole'],['Upper','Primeknit+'],['Outsole','Continental Rubber']])
+  },
+  {
+    title: "Fossil Men's Leather Chronograph Watch (Brown)",
+    description: "Classic Fossil chronograph with genuine leather strap, stainless steel case, water resistant 50m.",
+    price: 12995, discountPrice: 8995, category: 'Fashion', brand: 'Fossil',
+    stock: 35, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=500&q=80',
+      'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=500&q=80',
+      'https://images.unsplash.com/photo-1508656961313-2d2d8ce9f874?w=500&q=80'
+    ],
+    tags: ['watch','fossil','mens','leather'],
+    specs: new Map([['Case','Stainless Steel'],['Strap','Genuine Leather'],['Water Resistance','50m'],['Movement','Quartz']])
+  },
 
-{ title:'MacBook Air M2 8GB 256GB Midnight',                brand:'Apple',   category:'Electronics', price:114900, discountPrice:109900, stock:20, isPrime:true,  isFeatured:true,  description:'Apple M2 chip, 13.6" Liquid Retina display, 18-hour battery.', images:['https://images.unsplash.com/photo-1611186871525-5c6fd92f1ef7?w=600&q=80'] },
-{ title:'Dell XPS 15 Core i7 16GB 512GB OLED',             brand:'Dell',    category:'Electronics', price:149990, discountPrice:129990, stock:15, isPrime:true,  isFeatured:true,  description:'Intel i7-13700H, 15.6" OLED 3.5K, RTX 4060, Windows 11.', images:['https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80'] },
-{ title:'HP Pavilion 15 Ryzen 5 8GB 512GB SSD',            brand:'HP',      category:'Electronics', price:54990,  discountPrice:44990,  stock:30, isPrime:false, isFeatured:false, description:'AMD Ryzen 5 7520U, 15.6" FHD, 512GB SSD, Windows 11 Home.', images:['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80'] },
-{ title:'Lenovo ThinkPad E14 i5 16GB 512GB',               brand:'Lenovo',  category:'Electronics', price:69990,  discountPrice:59990,  stock:25, isPrime:true,  isFeatured:false, description:'Intel Core i5-1335U, 14" FHD IPS, ThinkPad keyboard.', images:['https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=600&q=80'] },
-{ title:'Asus ROG Strix G15 Ryzen 9 RTX 4060',             brand:'Asus',    category:'Electronics', price:119990, discountPrice:99990,  stock:12, isPrime:false, isFeatured:true,  description:'Ryzen 9 7945HX, RTX 4060, 15.6" 165Hz, 16GB DDR5.', images:['https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?w=600&q=80'] },
-{ title:'Acer Predator Helios 300 i7 RTX 3070',            brand:'Acer',    category:'Electronics', price:109990, discountPrice:89990,  stock:10, isPrime:false, isFeatured:false, description:'Intel i7-12700H, RTX 3070, 15.6" 144Hz, 16GB RAM.', images:['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80'] },
-{ title:'Microsoft Surface Pro 9 i5 8GB 256GB',            brand:'Microsoft',category:'Electronics',price:119999, discountPrice:109999, stock:15, isPrime:true,  isFeatured:false, description:'Intel Core i5-1235U, 13" PixelSense, 2-in-1, Windows 11.', images:['https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=600&q=80'] },
+  // ── HOME & KITCHEN ───────────────────────────────────────────
+  {
+    title: 'Instant Pot Duo 7-in-1 Electric Pressure Cooker (8L)',
+    description: 'Replaces 7 kitchen appliances: pressure cooker, slow cooker, rice cooker, steamer, sauté, yogurt maker, warmer.',
+    price: 12999, discountPrice: 8999, category: 'Home & Kitchen', brand: 'Instant Pot',
+    stock: 55, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1585515320310-259814833e62?w=500&q=80',
+      'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=500&q=80',
+      'https://images.unsplash.com/photo-1605522469906-897db67e9b0b?w=500&q=80'
+    ],
+    tags: ['pressure-cooker','instant-pot','kitchen'],
+    specs: new Map([['Capacity','8 Litres'],['Functions','7-in-1'],['Power','1200W']])
+  },
+  {
+    title: 'Dyson V15 Detect Absolute Cordless Vacuum Cleaner',
+    description: 'Laser dust detection, HEPA filtration, 60-minute runtime, LCD particle count screen, 11 accessories.',
+    price: 62900, discountPrice: 49900, category: 'Home & Kitchen', brand: 'Dyson',
+    stock: 18, isPrime: false, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80',
+      'https://images.unsplash.com/photo-1527515637-ed851d7ce71b?w=500&q=80',
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=500&q=80'
+    ],
+    tags: ['vacuum','dyson','cordless'],
+    specs: new Map([['Suction','230 AW'],['Runtime','60 min'],['Filter','HEPA'],['Weight','3.1 kg']])
+  },
+  {
+    title: 'Philips Air Fryer XXL (7.3L, Digital Touchscreen)',
+    description: 'RapidAir technology, 7.3L capacity, 90% less fat than frying. Digital touch screen with 7 presets.',
+    price: 17990, discountPrice: 11990, category: 'Home & Kitchen', brand: 'Philips',
+    stock: 40, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1648472027936-5c38ee9a3b44?w=500&q=80',
+      'https://images.unsplash.com/photo-1627308594200-a083321db80f?w=500&q=80',
+      'https://images.unsplash.com/photo-1556910103-1c02745a872f?w=500&q=80'
+    ],
+    tags: ['air-fryer','philips','kitchen'],
+    specs: new Map([['Capacity','7.3 Litres'],['Fat Reduction','90%'],['Power','2000W']])
+  },
+  {
+    title: 'Nespresso Vertuo Next Coffee Machine (Black)',
+    description: 'Centrifusion technology, 5 cup sizes from Espresso to Alto, WiFi connected, recycling programme.',
+    price: 17990, discountPrice: 12990, category: 'Home & Kitchen', brand: 'Nespresso',
+    stock: 30, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&q=80',
+      'https://images.unsplash.com/photo-1520262454473-a1a82276a574?w=500&q=80'
+    ],
+    tags: ['coffee','nespresso','espresso'],
+    specs: new Map([['Cup Sizes','5'],['Water Tank','1.1L'],['Connectivity','WiFi + Bluetooth']])
+  },
+  {
+    title: 'IKEA KALLAX Shelving Unit (White, 2x4)',
+    description: 'Versatile shelving unit with 8 compartments. Can be used as room divider, sideboard or TV unit.',
+    price: 7990, discountPrice: 5990, category: 'Home & Kitchen', brand: 'IKEA',
+    stock: 25, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&q=80',
+      'https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=500&q=80',
+      'https://images.unsplash.com/photo-1540932239986-30128078f3b5?w=500&q=80'
+    ],
+    tags: ['furniture','ikea','shelving','storage'],
+    specs: new Map([['Dimensions','77x147cm'],['Material','Particleboard'],['Max Load','13 kg per compartment']])
+  },
+  {
+    title: 'Milton Thermosteel Flask 1000ml (Blue)',
+    description: 'Double wall stainless steel vacuum insulated flask. Keeps hot 24hrs, cold 48hrs. 100% leak proof.',
+    price: 1299, discountPrice: 699, category: 'Home & Kitchen', brand: 'Milton',
+    stock: 200, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&q=80',
+      'https://images.unsplash.com/photo-1616118132534-381148898bb4?w=500&q=80',
+      'https://images.unsplash.com/photo-1563852033066-ed2af226b9a8?w=500&q=80'
+    ],
+    tags: ['flask','thermos','milton','water-bottle'],
+    specs: new Map([['Capacity','1000ml'],['Material','Stainless Steel 304'],['Hot','24 hours'],['Cold','48 hours']])
+  },
+  {
+    title: 'Prestige Induction Cooktop 2000W (Black)',
+    description: 'Prestige PIC 6.0 V3 induction cooktop with 7 pre-set menu, touch panel, overheat protection.',
+    price: 3999, discountPrice: 2499, category: 'Home & Kitchen', brand: 'Prestige',
+    stock: 70, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&q=80',
+      'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=500&q=80',
+      'https://images.unsplash.com/photo-1586208958839-06c17cac431d?w=500&q=80'
+    ],
+    tags: ['induction','cooktop','prestige','kitchen'],
+    specs: new Map([['Power','2000W'],['Presets','7'],['Panel','Touch'],['Safety','Overheat Protection']])
+  },
 
-{ title:'iPad Pro 12.9" M2 256GB Wi-Fi Space Gray',        brand:'Apple',   category:'Electronics', price:112900, discountPrice:104900, stock:18, isPrime:true,  isFeatured:true,  description:'M2 chip, Liquid Retina XDR, Center Stage camera, 5G.', images:['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80'] },
-{ title:'Samsung Galaxy Tab S9 11" 256GB Graphite',        brand:'Samsung', category:'Electronics', price:72999,  discountPrice:64999,  stock:22, isPrime:true,  isFeatured:false, description:'Snapdragon 8 Gen 2, Dynamic AMOLED, IP68, S Pen included.', images:['https://images.unsplash.com/photo-1587033411391-5d9e51cce126?w=600&q=80'] },
-{ title:'Lenovo Tab P12 Pro 12.6" 256GB Storm Grey',       brand:'Lenovo',  category:'Electronics', price:59999,  discountPrice:49999,  stock:16, isPrime:false, isFeatured:false, description:'AMOLED 2K, Snapdragon 870, quad speakers, stylus.', images:['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80'] },
+  // ── BOOKS ───────────────────────────────────────────────────
+  {
+    title: 'Atomic Habits by James Clear',
+    description: '#1 NYT bestseller. Easy and proven way to build good habits and break bad ones. 10M+ copies sold.',
+    price: 799, discountPrice: 499, category: 'Books', brand: 'Penguin',
+    stock: 200, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500&q=80',
+      'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=500&q=80',
+      'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&q=80'
+    ],
+    tags: ['book','self-help','habits','productivity'],
+    specs: new Map([['Author','James Clear'],['Pages','320'],['Language','English']])
+  },
+  {
+    title: 'Rich Dad Poor Dad by Robert Kiyosaki',
+    description: 'What the rich teach their kids about money. #1 personal finance book of all time.',
+    price: 699, discountPrice: 399, category: 'Books', brand: 'Plata Publishing',
+    stock: 180, isPrime: false, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1592496431122-2349e0fbc666?w=500&q=80',
+      'https://images.unsplash.com/photo-1554774853-719586f82d77?w=500&q=80',
+      'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=500&q=80'
+    ],
+    tags: ['book','finance','money','investing'],
+    specs: new Map([['Author','Robert Kiyosaki'],['Pages','336'],['Language','English']])
+  },
+  {
+    title: 'The Psychology of Money by Morgan Housel',
+    description: 'Timeless lessons on wealth, greed, and happiness. 19 short stories about how people think about money.',
+    price: 599, discountPrice: 349, category: 'Books', brand: 'Harriman House',
+    stock: 150, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=500&q=80',
+      'https://images.unsplash.com/photo-1565514020179-026b92b2d08a?w=500&q=80',
+      'https://images.unsplash.com/photo-1580514532152-780c749ebce9?w=500&q=80'
+    ],
+    tags: ['book','finance','psychology','money'],
+    specs: new Map([['Author','Morgan Housel'],['Pages','256'],['Language','English']])
+  },
+  {
+    title: 'Zero to One by Peter Thiel',
+    description: 'Notes on startups, or how to build the future. Peter Thiel shares thinking behind building something new.',
+    price: 699, discountPrice: 449, category: 'Books', brand: 'Crown Business',
+    stock: 120, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&q=80',
+      'https://images.unsplash.com/photo-1553484771-047a44eee2cb?w=500&q=80',
+      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80'
+    ],
+    tags: ['book','startup','business'],
+    specs: new Map([['Author','Peter Thiel'],['Pages','224'],['Language','English']])
+  },
+  {
+    title: 'The Alchemist by Paulo Coelho',
+    description: 'A fable about following your dream. One of the best-selling books in history with 150M+ copies sold.',
+    price: 499, discountPrice: 299, category: 'Books', brand: 'HarperCollins',
+    stock: 250, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=500&q=80',
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&q=80',
+      'https://images.unsplash.com/photo-1455390582262-044cdead2708?w=500&q=80'
+    ],
+    tags: ['book','fiction','novel','bestseller'],
+    specs: new Map([['Author','Paulo Coelho'],['Pages','208'],['Language','English']])
+  },
+  {
+    title: 'Wings of Fire by APJ Abdul Kalam',
+    description: 'Autobiography of Dr APJ Abdul Kalam, former President of India and missile scientist. Inspiring for every Indian.',
+    price: 299, discountPrice: 199, category: 'Books', brand: 'Universities Press',
+    stock: 300, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=500&q=80',
+      'https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=500&q=80',
+      'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=500&q=80'
+    ],
+    tags: ['book','biography','kalam','india'],
+    specs: new Map([['Author','APJ Abdul Kalam'],['Pages','196'],['Language','English']])
+  },
 
-{ title:'Sony WH-1000XM5 Wireless Headphones Black',       brand:'Sony',    category:'Electronics', price:29990,  discountPrice:19990,  stock:60, isPrime:true,  isFeatured:false, description:'Industry-leading ANC, 30hr battery, Auto NC Optimizer.', images:['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80'] },
-{ title:'Bose QuietComfort 45 Wireless Headphones',        brand:'Bose',    category:'Electronics', price:26900,  discountPrice:21900,  stock:35, isPrime:false, isFeatured:false, description:'Acoustic noise cancelling, 24hr battery, USB-C charging.', images:['https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80'] },
-{ title:'Apple AirPods Pro 2nd Gen MagSafe Case',          brand:'Apple',   category:'Electronics', price:24900,  discountPrice:19900,  stock:80, isPrime:true,  isFeatured:false, description:'H2 chip, Adaptive Audio, 2x ANC, IPX4 water resistant.', images:['https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=600&q=80'] },
-{ title:'Samsung Galaxy Buds2 Pro White',                  brand:'Samsung', category:'Electronics', price:17999,  discountPrice:12999,  stock:55, isPrime:true,  isFeatured:false, description:'24-bit Hi-Fi, Intelligent ANC, IPX7, 8hr battery.', images:['https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&q=80'] },
-{ title:'Jabra Elite 85h Wireless Over-Ear Gold',          brand:'Jabra',   category:'Electronics', price:19999,  discountPrice:14999,  stock:28, isPrime:false, isFeatured:false, description:'36hr battery, SmartSound, IP52, foldable compact design.', images:['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80'] },
-{ title:'Sennheiser Momentum 4 Wireless Black',            brand:'Sennheiser',category:'Electronics',price:29990, discountPrice:22990,  stock:20, isPrime:false, isFeatured:false, description:'60hr battery, adaptive ANC, touch controls, USB-C.', images:['https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80'] },
+  // ── SPORTS ──────────────────────────────────────────────────
+  {
+    title: 'Yonex Arcsaber 11 Pro Badminton Racket',
+    description: 'Professional grade carbon graphite racket, isometric head for larger sweet spot, 3U weight, 88g.',
+    price: 12990, discountPrice: 9990, category: 'Sports', brand: 'Yonex',
+    stock: 30, isPrime: false, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&q=80',
+      'https://images.unsplash.com/photo-1621360841013-c76831f0bf08?w=500&q=80',
+      'https://images.unsplash.com/photo-1582229415555-5dc16223e7cb?w=500&q=80'
+    ],
+    tags: ['badminton','racket','yonex','sports'],
+    specs: new Map([['Weight','88g (3U)'],['Material','Carbon Graphite'],['Balance','Head Heavy']])
+  },
+  {
+    title: 'Nivia Football Size 5 (Storm 2.0)',
+    description: 'Nivia Storm 2.0 size 5 football with 32-panel design, PVC material, butyl bladder for air retention.',
+    price: 999, discountPrice: 599, category: 'Sports', brand: 'Nivia',
+    stock: 100, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500&q=80',
+      'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=500&q=80',
+      'https://images.unsplash.com/photo-1529900965798-7443952baeb1?w=500&q=80'
+    ],
+    tags: ['football','sports','nivia','soccer'],
+    specs: new Map([['Size','5'],['Material','PVC'],['Panels','32'],['Bladder','Butyl']])
+  },
+  {
+    title: 'Boldfit Adjustable Dumbbell Set (10kg pair)',
+    description: 'Home gym dumbbell set with adjustable weight 2kg to 10kg per dumbbell. Rubber coated, anti-roll design.',
+    price: 3999, discountPrice: 2499, category: 'Sports', brand: 'Boldfit',
+    stock: 45, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&q=80',
+      'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80',
+      'https://images.unsplash.com/photo-1638202375990-2bdccba62734?w=500&q=80'
+    ],
+    tags: ['dumbbell','gym','fitness','weights'],
+    specs: new Map([['Weight Range','2-10 kg'],['Material','Rubber Coated Iron'],['Count','2 Dumbbells']])
+  },
+  {
+    title: 'Cosco Cricket Bat Kashmir Willow (Full Size)',
+    description: 'Cosco Kashmir willow full-size cricket bat, English grip, 5 grains willow, ideal for leather and tennis ball.',
+    price: 2499, discountPrice: 1499, category: 'Sports', brand: 'Cosco',
+    stock: 60, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=500&q=80',
+      'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=500&q=80',
+      'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=500&q=80'
+    ],
+    tags: ['cricket','bat','cosco','sports'],
+    specs: new Map([['Material','Kashmir Willow'],['Size','Full (SH)'],['Grip','English Cotton'],['Grains','5']])
+  },
+  {
+    title: 'Decathlon Quechua Backpack 20L (Blue)',
+    description: 'Lightweight 20L hiking backpack with rain cover, padded back, multiple compartments, hip belt.',
+    price: 1999, discountPrice: 1299, category: 'Sports', brand: 'Decathlon',
+    stock: 80, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80',
+      'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=500&q=80',
+      'https://images.unsplash.com/photo-1581605405669-fcdf81165afa?w=500&q=80'
+    ],
+    tags: ['backpack','hiking','decathlon','outdoor'],
+    specs: new Map([['Capacity','20 Litres'],['Weight','400g'],['Rain Cover','Included'],['Back','Padded']])
+  },
+  {
+    title: 'Lifelong Yoga Mat 6mm (Purple, Non-Slip)',
+    description: 'High density foam yoga mat with non-slip texture, moisture resistant surface, includes carry strap.',
+    price: 999, discountPrice: 599, category: 'Sports', brand: 'Lifelong',
+    stock: 120, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1601925228049-59d63f5c25e1?w=500&q=80',
+      'https://images.unsplash.com/photo-1592432678016-e910b06b3848?w=500&q=80',
+      'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&q=80'
+    ],
+    tags: ['yoga','mat','fitness','exercise'],
+    specs: new Map([['Thickness','6mm'],['Material','TPE Foam'],['Dimensions','183x61cm'],['Non-Slip','Yes']])
+  },
 
-{ title:'JBL Flip 6 Portable Speaker Blue',                brand:'JBL',     category:'Electronics', price:11999,  discountPrice:7999,   stock:65, isPrime:true,  isFeatured:false, description:'IP67 waterproof, 12hr battery, PartyBoost, Pro Sound.', images:['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&q=80'] },
-{ title:'Bose SoundLink Flex Waterproof Speaker',          brand:'Bose',    category:'Electronics', price:14900,  discountPrice:11900,  stock:40, isPrime:true,  isFeatured:false, description:'IP67 waterproof, floats, 12hr battery, PositionIQ.', images:['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&q=80'] },
-{ title:'Sony SRS-XB43 Extra Bass Wireless Speaker',       brand:'Sony',    category:'Electronics', price:14990,  discountPrice:9990,   stock:35, isPrime:false, isFeatured:false, description:'EXTRA BASS, IP67, 24hr battery, multi-connection.', images:['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&q=80'] },
-
-{ title:'LG 55" OLED evo 4K Smart TV C3',                  brand:'LG',      category:'Electronics', price:189990, discountPrice:129990, stock:10, isPrime:false, isFeatured:true,  description:'α9 AI Gen6, Dolby Vision IQ, HDMI 2.1, webOS 23, 120Hz.', images:['https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&q=80'] },
-{ title:'Samsung 65" QLED 4K Smart TV Q80C',              brand:'Samsung', category:'Electronics', price:159990, discountPrice:109990, stock:8,  isPrime:true,  isFeatured:true,  description:'Quantum HDR+, OTS+, 120Hz, HDMI 2.1, Gaming Hub.', images:['https://images.unsplash.com/photo-1461151304267-38535e780c79?w=600&q=80'] },
-{ title:'Sony Bravia XR 55" A80L OLED 4K Google TV',      brand:'Sony',    category:'Electronics', price:209990, discountPrice:159990, stock:6,  isPrime:false, isFeatured:true,  description:'XR Cognitive Processor, Acoustic Surface Audio+, 4K 120Hz.', images:['https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&q=80'] },
-{ title:'Mi 43" 4K Android Smart TV X Series',            brand:'Xiaomi',  category:'Electronics', price:32999,  discountPrice:24999,  stock:20, isPrime:true,  isFeatured:false, description:'4K UHD, Android 11, PatchWall, MEMC, 30W speaker.', images:['https://images.unsplash.com/photo-1461151304267-38535e780c79?w=600&q=80'] },
-
-{ title:'Canon EOS R50 Mirrorless Camera Body',            brand:'Canon',   category:'Electronics', price:75990,  discountPrice:64990,  stock:20, isPrime:false, isFeatured:false, description:'24.2MP APS-C, 4K video, Dual Pixel AF II, 651 AF points.', images:['https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=600&q=80'] },
-{ title:'Sony Alpha ZV-E10 Vlogging Camera Body',          brand:'Sony',    category:'Electronics', price:59990,  discountPrice:49990,  stock:18, isPrime:true,  isFeatured:false, description:'24.2MP APS-C, interchangeable lens, directional mic, 4K.', images:['https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80'] },
-{ title:'GoPro HERO12 Black Action Camera',                brand:'GoPro',   category:'Electronics', price:44990,  discountPrice:37990,  stock:30, isPrime:true,  isFeatured:false, description:'5.3K60 video, HyperSmooth 6.0, waterproof 10m, Max Lens.', images:['https://images.unsplash.com/photo-1544966503-7cc5ad3be3b7?w=600&q=80'] },
-{ title:'Nikon Z30 Mirrorless Vlog Camera',                brand:'Nikon',   category:'Electronics', price:69990,  discountPrice:59990,  stock:12, isPrime:false, isFeatured:false, description:'20.9MP APS-C, 4K UHD, flip-out LCD, 209-point AF.', images:['https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=600&q=80'] },
-{ title:'DJI Mini 4 Pro Drone Fly More Combo',             brand:'DJI',     category:'Electronics', price:89900,  discountPrice:79900,  stock:10, isPrime:false, isFeatured:true,  description:'4K HDR, 34min flight, omnidirectional sensing, ActiveTrack 360.', images:['https://images.unsplash.com/photo-1507582020474-9a35b7d455d9?w=600&q=80'] },
-
-{ title:'Logitech MX Master 3S Wireless Mouse',            brand:'Logitech',category:'Electronics', price:9995,   discountPrice:7495,   stock:90, isPrime:true,  isFeatured:false, description:'8000 DPI, MagSpeed scroll, works on glass, 70-day battery.', images:['https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&q=80'] },
-{ title:'Razer DeathAdder V3 HyperSpeed Mouse',            brand:'Razer',   category:'Electronics', price:7999,   discountPrice:5999,   stock:35, isPrime:false, isFeatured:false, description:'Focus Pro 30K optical, 90hr battery, 63g lightweight.', images:['https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&q=80'] },
-{ title:'Apple Magic Keyboard with Touch ID Silver',       brand:'Apple',   category:'Electronics', price:10900,  discountPrice:9900,   stock:45, isPrime:true,  isFeatured:false, description:'Touch ID, scissor mechanism, USB-C, compatible with M-series.', images:['https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&q=80'] },
-{ title:'Corsair K70 RGB Pro Mechanical Keyboard',         brand:'Corsair', category:'Electronics', price:13999,  discountPrice:10999,  stock:25, isPrime:true,  isFeatured:false, description:'Cherry MX Red, per-key RGB, aluminium frame, USB passthrough.', images:['https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&q=80'] },
-
-{ title:'Samsung 27" Curved Gaming Monitor 165Hz',         brand:'Samsung', category:'Electronics', price:24990,  discountPrice:17990,  stock:30, isPrime:false, isFeatured:false, description:'FHD curved VA, 165Hz, 1ms, AMD FreeSync Premium.', images:['https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80'] },
-{ title:'LG UltraWide 34" Curved Monitor QHD',            brand:'LG',      category:'Electronics', price:49990,  discountPrice:39990,  stock:15, isPrime:true,  isFeatured:false, description:'34" IPS, 21:9, QHD, 100Hz, USB-C 90W, HDR10.', images:['https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600&q=80'] },
-{ title:'BenQ EW2880U 28" 4K USB-C Monitor',              brand:'BenQ',    category:'Electronics', price:44990,  discountPrice:37990,  stock:12, isPrime:false, isFeatured:false, description:'4K IPS, HDR, USB-C 60W, HDMI 2.0, DisplayPort, sRGB.', images:['https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80'] },
-
-{ title:'Samsung 970 EVO Plus 1TB NVMe SSD',              brand:'Samsung', category:'Electronics', price:8999,   discountPrice:6499,   stock:75, isPrime:true,  isFeatured:false, description:'3500MB/s read, 3300MB/s write, V-NAND, 5yr warranty.', images:['https://images.unsplash.com/photo-1591488320449-011701bb6704?w=600&q=80'] },
-{ title:'WD My Passport 2TB Portable HDD Blue',           brand:'WD',      category:'Electronics', price:5999,   discountPrice:3999,   stock:120,isPrime:true,  isFeatured:false, description:'USB 3.0, password protection, 256-bit AES, auto backup.', images:['https://images.unsplash.com/photo-1531492746076-161ca9bcad58?w=600&q=80'] },
-
-{ title:'Anker 65W GaN USB-C Charger 3-Port',             brand:'Anker',   category:'Electronics', price:3999,   discountPrice:2499,   stock:100,isPrime:true,  isFeatured:false, description:'65W USB-C + 2×USB-A, GaN, foldable plug, compact design.', images:['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&q=80'] },
-{ title:'Belkin 10000mAh Boost Charge Power Bank',        brand:'Belkin',  category:'Electronics', price:4999,   discountPrice:3299,   stock:85, isPrime:false, isFeatured:false, description:'15W fast charge, USB-C + USB-A, LED battery indicator.', images:['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&q=80'] },
-{ title:'Mi 20000mAh Power Bank 3 Ultra',                 brand:'Xiaomi',  category:'Electronics', price:2499,   discountPrice:1799,   stock:150,isPrime:true,  isFeatured:false, description:'50W fast charging, 33W output, USB-C, 2 USB-A ports.', images:['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&q=80'] },
-
-{ title:'PlayStation 5 Console Disc Edition',             brand:'Sony',    category:'Electronics', price:54990,  discountPrice:49990,  stock:20, isPrime:true,  isFeatured:true,  description:'Custom SSD, DualSense, 4K gaming, ray tracing, haptic feedback.', images:['https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&q=80'] },
-{ title:'Xbox Series X 1TB Gaming Console',               brand:'Microsoft',category:'Electronics',price:51990,  discountPrice:46990,  stock:18, isPrime:true,  isFeatured:true,  description:'12 TFLOPS, 4K 120fps, 1TB custom NVMe SSD, Quick Resume.', images:['https://images.unsplash.com/photo-1621259182978-fbdcef01a52c?w=600&q=80'] },
-{ title:'Nintendo Switch OLED Model White',               brand:'Nintendo',category:'Electronics', price:34990,  discountPrice:31990,  stock:25, isPrime:false, isFeatured:false, description:'7" OLED, wired LAN, 64GB storage, enhanced audio, kickstand.', images:['https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=600&q=80'] },
-
-{ title:'Apple Watch Series 9 GPS 45mm Midnight',         brand:'Apple',   category:'Electronics', price:44900,  discountPrice:41900,  stock:40, isPrime:true,  isFeatured:true,  description:'S9 chip, Double Tap, Always-On Retina, crash detection.', images:['https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=600&q=80'] },
-{ title:'Samsung Galaxy Watch 6 Classic 47mm',            brand:'Samsung', category:'Electronics', price:37999,  discountPrice:29999,  stock:28, isPrime:false, isFeatured:false, description:'Rotating bezel, BioActive Sensor, sleep coaching, 4G.', images:['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80'] },
-{ title:'Fitbit Charge 6 Health Fitness Tracker',         brand:'Fitbit',  category:'Electronics', price:14999,  discountPrice:11999,  stock:55, isPrime:true,  isFeatured:false, description:'GPS, heart rate, ECG, SpO2, Spotify, Google Maps.', images:['https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=600&q=80'] },
-{ title:'Noise ColorFit Pro 5 Max Smartwatch',            brand:'Noise',   category:'Electronics', price:4999,   discountPrice:1999,   stock:80, isPrime:true,  isFeatured:false, description:'1.85" display, Bluetooth calling, heart rate, SpO2, 100 sports.', images:['https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=600&q=80'] },
-
-{ title:'Kindle Paperwhite 11th Gen 16GB Denim',          brand:'Amazon',  category:'Electronics', price:14999,  discountPrice:12999,  stock:50, isPrime:true,  isFeatured:true,  description:'6.8" glare-free display, warm light, IPX8, 10-week battery.', images:['https://images.unsplash.com/photo-1491841651911-c44484b6c9b0?w=600&q=80'] },
-{ title:'Amazon Echo Dot 5th Gen Smart Speaker',          brand:'Amazon',  category:'Electronics', price:5999,   discountPrice:2499,   stock:90, isPrime:true,  isFeatured:true,  description:'Improved bass, Alexa built-in, temperature sensor, eero.', images:['https://images.unsplash.com/photo-1543512214-318c7553f230?w=600&q=80'] },
-{ title:'Google Nest Hub 2nd Gen 7" Smart Display',       brand:'Google',  category:'Electronics', price:9999,   discountPrice:6999,   stock:30, isPrime:false, isFeatured:false, description:'Sleep Sensing, Ambient EQ, Soli radar chip, Google Assistant.', images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-
-{ title:'TP-Link Archer AX73 Wi-Fi 6 Router',             brand:'TP-Link', category:'Electronics', price:12999,  discountPrice:8999,   stock:35, isPrime:true,  isFeatured:false, description:'AX5400, 6 antennas, OneMesh, WPA3, beamforming.', images:['https://images.unsplash.com/photo-1606904825846-647eb07f5be2?w=600&q=80'] },
-{ title:'Epson EcoTank L3252 All-in-One Printer',         brand:'Epson',   category:'Electronics', price:14990,  discountPrice:11990,  stock:35, isPrime:true,  isFeatured:false, description:'Wi-Fi, 4800dpi, ultra-low cost per page, refillable tank.', images:['https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&q=80'] },
-
-{ title:'Philips Hue White & Color Starter Kit E27',      brand:'Philips', category:'Electronics', price:8999,   discountPrice:6999,   stock:50, isPrime:true,  isFeatured:false, description:'16M colors, 800 lumen, Zigbee + Bluetooth, Bridge + 2 bulbs.', images:['https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&q=80'] },
-{ title:'Raspberry Pi 4 Model B 8GB RAM',                 brand:'Raspberry',category:'Electronics',price:7990,   discountPrice:6990,   stock:30, isPrime:false, isFeatured:false, description:'Quad-core Cortex-A72, dual 4K display, USB 3.0, Gigabit LAN.', images:['https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=600&q=80'] },
-{ title:'Mi Smart Band 8 Pro AMOLED Fitness Tracker',     brand:'Xiaomi',  category:'Electronics', price:3999,   discountPrice:2999,   stock:100,isPrime:true,  isFeatured:false, description:'1.74" AMOLED, built-in GPS, SpO2, 14-day battery, 150+ sports.', images:['https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// FASHION — 60 products
-// ══════════════════════════════════════════════════════
-{ title:"Levi's 511 Slim Fit Jeans Dark Indigo Wash",     brand:"Levi's",  category:'Fashion', price:3999, discountPrice:2399, stock:150,isPrime:true,  isFeatured:true,  description:'Slim fit below waist, 99% cotton, stretch comfort denim.', images:['https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&q=80'] },
-{ title:'Nike Air Max 270 React White Volt',               brand:'Nike',    category:'Fashion', price:11995,discountPrice:8995,  stock:100,isPrime:false, isFeatured:true,  description:'270-unit Air heel, React foam, mesh upper, breathable.', images:['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80'] },
-{ title:'Adidas Ultraboost 23 Core Black',                 brand:'Adidas',  category:'Fashion', price:17999,discountPrice:12999, stock:55, isPrime:false, isFeatured:false, description:'BOOST midsole, Primeknit+ upper, Continental rubber sole.', images:['https://images.unsplash.com/photo-1539185441755-769473a23570?w=600&q=80'] },
-{ title:'Puma RS-X Reinvention White Blue',                brand:'Puma',    category:'Fashion', price:8999, discountPrice:5999,  stock:70, isPrime:true,  isFeatured:false, description:'RS cushioning technology, retro chunky design, mesh upper.', images:['https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80'] },
-{ title:'New Balance 574 Classic Grey',                    brand:'New Balance',category:'Fashion',price:9999,discountPrice:7999,  stock:40, isPrime:false, isFeatured:false, description:'ENCAP midsole, suede/mesh upper, versatile everyday shoe.', images:['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80'] },
-{ title:'Converse Chuck Taylor All Star White Low',        brand:'Converse',category:'Fashion', price:4995, discountPrice:3495,  stock:90, isPrime:true,  isFeatured:false, description:'Canvas upper, rubber cupsole, OrthoLite cushioning, iconic.', images:['https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80'] },
-{ title:'Vans Old Skool Classic Black White',              brand:'Vans',    category:'Fashion', price:4995, discountPrice:3995,  stock:75, isPrime:true,  isFeatured:false, description:'Suede + canvas, waffle outsole, padded collar, side stripe.', images:['https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80'] },
-{ title:'Woodland Men Waterproof Trekking Shoes',          brand:'Woodland',category:'Fashion', price:4995, discountPrice:3495,  stock:60, isPrime:true,  isFeatured:false, description:'Waterproof leather, rubber outsole, ankle support, toe cap.', images:['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80'] },
-{ title:'Skechers GOwalk 6 Slip-On Loafer Men',           brand:'Skechers',category:'Fashion', price:5995, discountPrice:3995,  stock:75, isPrime:true,  isFeatured:false, description:'Arch Fit insole, ultra-lightweight, machine washable upper.', images:['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80'] },
-{ title:'Crocs Classic Clog Unisex Ocean Blue',            brand:'Crocs',   category:'Fashion', price:3495, discountPrice:2495,  stock:80, isPrime:true,  isFeatured:false, description:'Croslite foam, ventilation ports, Jibbitz compatible, lightweight.', images:['https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80'] },
-
-{ title:'Ray-Ban Aviator Classic Gold G-15 Lens',         brand:'Ray-Ban', category:'Fashion', price:9490, discountPrice:7490,  stock:45, isPrime:false, isFeatured:false, description:'58mm G-15 lens, gold frame, 100% UV protection, iconic.', images:['https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&q=80'] },
-{ title:'Oakley Holbrook Polished Black Prizm',            brand:'Oakley',  category:'Fashion', price:12990,discountPrice:9990,  stock:25, isPrime:false, isFeatured:false, description:'O-Matter frame, Unobtanium, Prizm Road lens, UV400.', images:['https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&q=80'] },
-{ title:'Fossil Machine Chronograph Brown Leather',        brand:'Fossil',  category:'Fashion', price:12995,discountPrice:8995,  stock:35, isPrime:true,  isFeatured:false, description:'Stainless case, genuine leather strap, 50m water resistant.', images:['https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600&q=80'] },
-{ title:'Titan Raga Gold Dial Mesh Bracelet Watch',       brand:'Titan',   category:'Fashion', price:8995, discountPrice:6995,  stock:40, isPrime:true,  isFeatured:false, description:'Swarovski crystals, mesh bracelet, quartz movement.', images:['https://images.unsplash.com/photo-1548169874-53e85f753f1e?w=600&q=80'] },
-{ title:'Casio G-Shock DW-5600 Digital Black Watch',      brand:'Casio',   category:'Fashion', price:5995, discountPrice:4495,  stock:50, isPrime:true,  isFeatured:false, description:'Shock resistant, 200m water resistant, LED backlight.', images:['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80'] },
-{ title:'Seiko Presage Automatic Cocktail Time Watch',    brand:'Seiko',   category:'Fashion', price:24995,discountPrice:21995, stock:15, isPrime:false, isFeatured:true,  description:'Automatic movement, power reserve, cocktail inspiration dial.', images:['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80'] },
-
-{ title:"Tommy Hilfiger Men's Classic Polo Navy",         brand:'Tommy Hilfiger',category:'Fashion',price:3999,discountPrice:2499,stock:80,isPrime:true,isFeatured:false,description:'100% pima cotton, regular fit, ribbed collar, flag emblem.',images:['https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=600&q=80'] },
-{ title:'Allen Solly Men Formal White Shirt',             brand:'Allen Solly',category:'Fashion',price:1999,discountPrice:1299,stock:110,isPrime:false,isFeatured:false,description:'Regular fit, cotton blend, spread collar, easy iron fabric.',images:['https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&q=80'] },
-{ title:'Louis Philippe Slim Chinos Khaki',               brand:'Louis Philippe',category:'Fashion',price:3499,discountPrice:2299,stock:65,isPrime:true,isFeatured:false,description:'Slim tapered fit, cotton stretch, 4-pocket design.',images:['https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&q=80'] },
-{ title:'Van Heusen 2-Piece Suit Navy Slim Fit',          brand:'Van Heusen',category:'Fashion',price:9999,discountPrice:6999,stock:25,isPrime:true,isFeatured:false,description:'Poly-viscose, slim fit, single button, notch lapel.',images:['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80'] },
-{ title:'UCB Men Quilted Jacket Navy Blue',               brand:'United Colors of Benetton',category:'Fashion',price:4999,discountPrice:2999,stock:40,isPrime:false,isFeatured:false,description:'Quilted polyester, zip front, 2 pockets, slim fit.',images:['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=80'] },
-{ title:'H&M Men Oversized Hoodie Grey Marl',             brand:'H&M',     category:'Fashion', price:1999, discountPrice:1299, stock:100,isPrime:false, isFeatured:false, description:'Cotton blend, kangaroo pocket, drawstring hood, ribbed cuffs.', images:['https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80'] },
-{ title:"Manyavar Men's Sherwani Gold Embroidered",       brand:'Manyavar',category:'Fashion', price:14999,discountPrice:10999, stock:15, isPrime:false, isFeatured:true,  description:'Brocade fabric, full sleeve, ethnic embroidery, kurta pajama set.', images:['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80'] },
-{ title:'Peter England Men Check Casual Shirt',           brand:'Peter England',category:'Fashion',price:1799,discountPrice:1099,stock:90,isPrime:false,isFeatured:false,description:'Cotton, regular fit, check pattern, casual collar, patch pocket.',images:['https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&q=80'] },
-
-{ title:'Biba Women Anarkali Kurti Floral Cotton',        brand:'Biba',    category:'Fashion', price:1999, discountPrice:999,   stock:120,isPrime:true,  isFeatured:true,  description:'Cotton fabric, ethnic floral print, festive and casual wear.', images:['https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&q=80'] },
-{ title:"Levi's Women 711 Skinny Jeans Mid Rise",         brand:"Levi's",  category:'Fashion', price:3499, discountPrice:2199,  stock:90, isPrime:true,  isFeatured:false, description:'Skinny fit, mid rise, stretch denim, 5-pocket styling.', images:['https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&q=80'] },
-{ title:'Fabindia Handloom Cotton Saree Blue',            brand:'Fabindia',category:'Fashion', price:4990, discountPrice:3490,  stock:30, isPrime:false, isFeatured:true,  description:'Handloom cotton, natural dye, traditional weave, 5.5m length.', images:['https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&q=80'] },
-{ title:'Zara Women Belted Trench Coat Beige',            brand:'Zara',    category:'Fashion', price:8990, discountPrice:5990,  stock:20, isPrime:false, isFeatured:false, description:'Polyester blend, belt, storm flap, notched lapel, knee length.', images:['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=80'] },
-{ title:'Bewakoof Women Lavender Jogger Pants',           brand:'Bewakoof',category:'Fashion', price:999,  discountPrice:699,   stock:120,isPrime:true,  isFeatured:false, description:'Cotton blend, elastic waist, 2 pockets, drawstring, relaxed fit.', images:['https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&q=80'] },
-{ title:'Gucci GG Marmont Matelassé Shoulder Bag',        brand:'Gucci',   category:'Fashion', price:249999,discountPrice:229999,stock:3,isPrime:false,isFeatured:true,  description:'Matelassé leather, GG hardware, adjustable chain strap, luxury.', images:['https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80'] },
-{ title:'Hidesign Women Full Grain Leather Tote Tan',     brand:'Hidesign',category:'Fashion', price:6990, discountPrice:4990,  stock:25, isPrime:false, isFeatured:false, description:'Full grain leather, spacious interior, zip closure, shoulder strap.', images:['https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80'] },
-
-{ title:'American Tourister Spinner 68cm Trolley',        brand:'American Tourister',category:'Fashion',price:7999,discountPrice:4999,stock:35,isPrime:true,isFeatured:true,description:'TSA lock, 4 spinner wheels, expandable, polycarbonate shell.',images:['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80'] },
-{ title:'Wildcraft Backpack 30L Laptop Blue',             brand:'Wildcraft',category:'Fashion', price:2999, discountPrice:1999,  stock:55, isPrime:true,  isFeatured:false, description:'30L, padded laptop sleeve, rain cover, ergonomic back panel.', images:['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// HOME & KITCHEN — 40 products
-// ══════════════════════════════════════════════════════
-{ title:'Instant Pot Duo 7-in-1 Pressure Cooker 8L',     brand:'Instant Pot',category:'Home & Kitchen',price:12999,discountPrice:8999,stock:55,isPrime:true,isFeatured:true,description:'Pressure, slow, rice, steam, sauté, yogurt, warm — 7 in 1.',images:['https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80'] },
-{ title:'Philips Air Fryer XXL HD9762 7.3L Digital',     brand:'Philips', category:'Home & Kitchen',price:17990,discountPrice:11990,stock:40,isPrime:true, isFeatured:false,description:'RapidAir technology, 7.3L, 90% less fat, 7 presets.',images:['https://images.unsplash.com/photo-1648472027936-5c38ee9a3b44?w=600&q=80'] },
-{ title:'Nespresso Vertuo Next Coffee Machine Black',     brand:'Nespresso',category:'Home & Kitchen',price:17990,discountPrice:12990,stock:30,isPrime:true,isFeatured:false,description:'Centrifusion, 5 cup sizes, WiFi connected, capsule recycling.',images:['https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80'] },
-{ title:'Dyson V15 Detect Absolute Cordless Vacuum',     brand:'Dyson',   category:'Home & Kitchen',price:62900,discountPrice:49900,stock:12,isPrime:false,isFeatured:true, description:'Laser detection, HEPA, 60min, LCD particle count screen.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'LG 260L Double Door Refrigerator GL-T292',      brand:'LG',      category:'Home & Kitchen',price:29990,discountPrice:24990,stock:12,isPrime:true, isFeatured:true, description:'Smart Inverter, Multi Air Flow, Moist Balance Crisper, 5★.',images:['https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=600&q=80'] },
-{ title:'Bosch Serie 4 Washing Machine Front Load 7kg',  brand:'Bosch',   category:'Home & Kitchen',price:35990,discountPrice:28990,stock:10,isPrime:false,isFeatured:true, description:'EcoSilence Drive, ActiveWater, 5★ energy, SpeedPerfect.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'IFB Senator Plus 8kg Front Load Washer',        brand:'IFB',     category:'Home & Kitchen',price:39990,discountPrice:32990,stock:8, isPrime:false,isFeatured:false,description:'Aqua Energie, cradle wash, in-built heater, 1400 RPM.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'Milton Thermosteel Flip Lid Flask 1000ml',      brand:'Milton',  category:'Home & Kitchen',price:1299, discountPrice:699,  stock:200,isPrime:true, isFeatured:false,description:'SS 304, hot 24hr, cold 48hr, flip lid, leak proof.',images:['https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80'] },
-{ title:'Prestige Iris Induction Cooktop 2000W',         brand:'Prestige',category:'Home & Kitchen',price:3999, discountPrice:2499, stock:70, isPrime:true, isFeatured:false,description:'Touch panel, 7 presets, auto-off, overheat protection.',images:['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80'] },
-{ title:'Hawkins Futura Non-Stick Deep Pan 3L',          brand:'Hawkins', category:'Home & Kitchen',price:2999, discountPrice:1999, stock:85, isPrime:true, isFeatured:false,description:'Hard anodised, PFOA-free coating, glass lid, suitable all hobs.',images:['https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80'] },
-{ title:'Pigeon Amaze Plus Electric Kettle 1.5L',        brand:'Pigeon',  category:'Home & Kitchen',price:1499, discountPrice:799,  stock:100,isPrime:true, isFeatured:false,description:'1500W, auto shut-off, boil-dry protection, LED indicator.',images:['https://images.unsplash.com/photo-1523371054106-bbf80586c38c?w=600&q=80'] },
-{ title:'Morphy Richards Divo Espresso Machine 1350W',   brand:'Morphy Richards',category:'Home & Kitchen',price:4999,discountPrice:3499,stock:35,isPrime:false,isFeatured:false,description:'15 bar pressure, milk frother, detachable tray, 600ml tank.',images:['https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80'] },
-{ title:'Whirlpool 30L Convection Microwave Oven',       brand:'Whirlpool',category:'Home & Kitchen',price:12990,discountPrice:9490, stock:22, isPrime:true, isFeatured:false,description:'6th Sense, Steam Clean, 31 auto-cook menus, crisp function.',images:['https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80'] },
-{ title:'Eureka Forbes Aquaguard Sure RO+UV 7L',         brand:'Eureka Forbes',category:'Home & Kitchen',price:14999,discountPrice:10999,stock:30,isPrime:true,isFeatured:false,description:'RO+UV+MTDS, 7L storage, 12L/hr, mineral guard technology.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'Symphony Diet 3D 30i Tower Air Cooler',         brand:'Symphony',category:'Home & Kitchen',price:14990,discountPrice:10990,stock:20,isPrime:true, isFeatured:true, description:'30L, BLDC motor, i-Pure technology, 4-way air deflection.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'Godrej 265L Frost Free Refrigerator Silver',    brand:'Godrej',  category:'Home & Kitchen',price:27990,discountPrice:22990,stock:10,isPrime:true, isFeatured:false,description:'Inverter, 5★, UV antibacterial gasket, toughened glass shelf.',images:['https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=600&q=80'] },
-{ title:'IKEA KALLAX Shelving Unit White 2x4 8 Cube',    brand:'IKEA',    category:'Home & Kitchen',price:7990, discountPrice:5990, stock:25, isPrime:false,isFeatured:false,description:'8 compartments, versatile, room divider or sideboard use.',images:['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80'] },
-{ title:'Cello Opalware White Dinner Set 18pc',          brand:'Cello',   category:'Home & Kitchen',price:2999, discountPrice:1799, stock:60, isPrime:true, isFeatured:false,description:'18-piece, microwave safe, dishwasher safe, chip resistant.',images:['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80'] },
-{ title:'Bombay Dyeing King Cotton Bedsheet Floral',     brand:'Bombay Dyeing',category:'Home & Kitchen',price:2499,discountPrice:1499,stock:80,isPrime:false,isFeatured:false,description:'200 TC, double size, 2 pillow covers included, colorfast.',images:['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80'] },
-{ title:'Havells Fresco 1200mm Ceiling Fan White',       brand:'Havells', category:'Home & Kitchen',price:2499, discountPrice:1799, stock:40, isPrime:true, isFeatured:false,description:'1200mm, 5-star, aerodynamic blades, BLDC motor, energy saving.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// BOOKS — 25 products
-// ══════════════════════════════════════════════════════
-{ title:'Atomic Habits James Clear Paperback',            brand:'Penguin', category:'Books', price:799,  discountPrice:499,  stock:200,isPrime:true, isFeatured:true, description:'NYT #1 bestseller, build good habits and break bad ones.',images:['https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=80'] },
-{ title:'Rich Dad Poor Dad Robert Kiyosaki',              brand:'Plata',   category:'Books', price:699,  discountPrice:399,  stock:180,isPrime:false,isFeatured:true, description:'#1 personal finance book, what rich teach kids about money.',images:['https://images.unsplash.com/photo-1592496431122-2349e0fbc666?w=600&q=80'] },
-{ title:'The Alchemist Paulo Coelho English',             brand:'HarperCollins',category:'Books',price:499,discountPrice:299,stock:250,isPrime:true,isFeatured:true, description:'150M+ copies sold. Inspiring fable about following your dream.',images:['https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=80'] },
-{ title:'Wings of Fire APJ Abdul Kalam Autobiography',   brand:'Universities Press',category:'Books',price:299,discountPrice:199,stock:300,isPrime:true,isFeatured:true,description:'Autobiography of former President of India, inspiring journey.',images:['https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&q=80'] },
-{ title:'The Psychology of Money Morgan Housel',          brand:'Harriman',category:'Books', price:599,  discountPrice:349,  stock:150,isPrime:true, isFeatured:false,description:'Timeless lessons on wealth, greed, and happiness, 19 stories.',images:['https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=600&q=80'] },
-{ title:'Zero to One Peter Thiel Blake Masters',          brand:'Crown',   category:'Books', price:699,  discountPrice:449,  stock:120,isPrime:false,isFeatured:false,description:'Notes on startups and how to build the future from scratch.',images:['https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&q=80'] },
-{ title:'Sapiens A Brief History of Humankind',           brand:'Harper',  category:'Books', price:699,  discountPrice:499,  stock:140,isPrime:true, isFeatured:true, description:'Yuval Noah Harari. 15M+ copies. Our species full story.',images:['https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80'] },
-{ title:'Ikigai Japanese Secret to Long Life',            brand:'Penguin', category:'Books', price:399,  discountPrice:249,  stock:220,isPrime:true, isFeatured:true, description:'Find your purpose, live longer, Japanese philosophy.',images:['https://images.unsplash.com/photo-1553547057-b41e40cbc5ef?w=600&q=80'] },
-{ title:'Harry Potter Sorcerer Stone JK Rowling',         brand:'Bloomsbury',category:'Books',price:599, discountPrice:449,  stock:180,isPrime:true, isFeatured:true, description:'The magical beginning of the Hogwarts journey, timeless classic.',images:['https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600&q=80'] },
-{ title:'1984 George Orwell Classic Dystopian',           brand:'Penguin', category:'Books', price:299,  discountPrice:199,  stock:200,isPrime:true, isFeatured:false,description:'Big Brother is watching. Doublethink. Classic dystopian fiction.',images:['https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=80'] },
-{ title:'Think and Grow Rich Napoleon Hill',              brand:'Fingerprint',category:'Books',price:399,discountPrice:249,  stock:200,isPrime:true, isFeatured:false,description:'80M+ copies. The original success philosophy masterpiece.',images:['https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=80'] },
-{ title:'Deep Work Rules for Focused Success Cal Newport', brand:'Grand Central',category:'Books',price:699,discountPrice:449,stock:130,isPrime:true,isFeatured:false,description:'Focus without distraction is the superpower of the 21st century.',images:['https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80'] },
-{ title:'The Subtle Art of Not Giving a F*ck',            brand:'Harper',  category:'Books', price:599,  discountPrice:399,  stock:130,isPrime:false,isFeatured:false,description:'Counterintuitive approach to living a good life. Mark Manson.',images:['https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// SPORTS — 30 products
-// ══════════════════════════════════════════════════════
-{ title:'Yonex Arcsaber 11 Pro Badminton Racket 88g',    brand:'Yonex',   category:'Sports', price:12990,discountPrice:9990, stock:30, isPrime:false,isFeatured:true, description:'Carbon graphite, isometric head, 3U/4U weight, pro level.',images:['https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&q=80'] },
-{ title:'Nivia Storm 2.0 Football Size 5',               brand:'Nivia',   category:'Sports', price:999,  discountPrice:599,  stock:100,isPrime:true, isFeatured:false,description:'32-panel PVC, butyl bladder, machine stitched, durable.',images:['https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80'] },
-{ title:'Boldfit Adjustable Dumbbell Set 10kg Pair',     brand:'Boldfit', category:'Sports', price:3999, discountPrice:2499, stock:45, isPrime:true, isFeatured:false,description:'Rubber coated iron, adjustable 2-10kg, anti-roll design.',images:['https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=80'] },
-{ title:'Cosco Kashmir Willow Cricket Bat Full Size',    brand:'Cosco',   category:'Sports', price:2499, discountPrice:1499, stock:60, isPrime:false,isFeatured:false,description:'Kashmir willow, English cotton grip, 5 grains, full size SH.',images:['https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=600&q=80'] },
-{ title:'Lifelong Yoga Mat 6mm TPE Non-Slip Purple',     brand:'Lifelong',category:'Sports', price:999,  discountPrice:599,  stock:120,isPrime:true, isFeatured:false,description:'TPE foam, 183x61cm, non-slip, moisture resistant, carry strap.',images:['https://images.unsplash.com/photo-1601925228049-59d63f5c25e1?w=600&q=80'] },
-{ title:'Decathlon Quechua 20L Hiking Backpack Blue',    brand:'Decathlon',category:'Sports',price:1999, discountPrice:1299, stock:80, isPrime:true, isFeatured:false,description:'Lightweight, rain cover, padded back, hip belt, 20L capacity.',images:['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80'] },
-{ title:'Spalding NBA Official Size 7 Basketball',       brand:'Spalding',category:'Sports', price:3999, discountPrice:2999, stock:50, isPrime:true, isFeatured:false,description:'Official NBA game ball, composite leather, indoor/outdoor.',images:['https://images.unsplash.com/photo-1546519638405-a9d1a6c0b5a3?w=600&q=80'] },
-{ title:'Cosco Championship Table Tennis Table',         brand:'Cosco',   category:'Sports', price:14999,discountPrice:10999,stock:10, isPrime:false,isFeatured:true, description:'Full size 9x5ft, ITTF approved, foldable, lockable wheels.',images:['https://images.unsplash.com/photo-1590227255619-98c5db0a0f5f?w=600&q=80'] },
-{ title:'Aurion Anti-Fog UV Swimming Goggles',           brand:'Aurion',  category:'Sports', price:999,  discountPrice:599,  stock:80, isPrime:true, isFeatured:false,description:'Anti-fog coating, UV400 protection, adjustable strap, leak-proof.',images:['https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?w=600&q=80'] },
-{ title:'Strauss Skipping Rope with Digital Counter',    brand:'Strauss', category:'Sports', price:799,  discountPrice:449,  stock:100,isPrime:true, isFeatured:false,description:'Digital counter, foam grip, adjustable length, PVC cable.',images:['https://images.unsplash.com/photo-1601925228049-59d63f5c25e1?w=600&q=80'] },
-{ title:'SG Cricket Batting Gloves Premium Leather',     brand:'SG',      category:'Sports', price:2499, discountPrice:1799, stock:35, isPrime:false,isFeatured:false,description:'Premium leather, cane reed bolsters, elastic wrist strap.',images:['https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=600&q=80'] },
-{ title:'Nike Mercurial Superfly Football Cleats',       brand:'Nike',    category:'Sports', price:12999,discountPrice:9999, stock:20, isPrime:true, isFeatured:false,description:'Flyknit upper, chevron studs, ACC all-conditions control.',images:['https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80'] },
-{ title:'Domyos 20kg Barbell Dumbbell Weight Set',       brand:'Domyos',  category:'Sports', price:5999, discountPrice:3999, stock:25, isPrime:false,isFeatured:false,description:'20kg plates, 2 dumbbell bars, 1 barbell rod, home gym.',images:['https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// TOYS & GAMES — 20 products
-// ══════════════════════════════════════════════════════
-{ title:'LEGO Technic Land Rover Defender 2573pcs',      brand:'LEGO',    category:'Toys & Games',price:24999,discountPrice:19999,stock:20,isPrime:true, isFeatured:true, description:'Working suspension, 4-speed gearbox, differential lock.',images:['https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?w=600&q=80'] },
-{ title:'Funskool Monopoly Classic Family Board Game',   brand:'Funskool',category:'Toys & Games',price:1299,discountPrice:799,  stock:80, isPrime:true, isFeatured:false,description:'2-8 players, 28 title deed cards, 8 tokens, classic fun.',images:['https://images.unsplash.com/photo-1611891487122-207579d67d91?w=600&q=80'] },
-{ title:'Hot Wheels 20 Car Gift Pack Assorted',          brand:'Hot Wheels',category:'Toys & Games',price:1299,discountPrice:849,stock:60,isPrime:false,isFeatured:false,description:'20 die-cast 1:64 scale cars, assorted designs, age 3+.',images:['https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=600&q=80'] },
-{ title:"Rubik's Cube 3x3 Original Speed Cube",          brand:"Rubik's", category:'Toys & Games',price:499, discountPrice:349,  stock:150,isPrime:true, isFeatured:false,description:'Smooth mechanism, vibrant colors, develops problem solving.',images:['https://images.unsplash.com/photo-1591991564021-0f9d3e51b0cf?w=600&q=80'] },
-{ title:'Nerf N-Strike Elite Disruptor 6-Dart Blaster',  brand:'Nerf',    category:'Toys & Games',price:1999,discountPrice:1299, stock:45, isPrime:true, isFeatured:false,description:'Rotating drum, slam-fire, 27m range, 6 Elite darts, age 8+.',images:['https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=600&q=80'] },
-{ title:'Carrom Board Full Size Tournament Quality',     brand:'Precise', category:'Toys & Games',price:3999,discountPrice:2499, stock:25, isPrime:false,isFeatured:true, description:'Plywood, smooth surface, striker, carrom men, full set.',images:['https://images.unsplash.com/photo-1611891487122-207579d67d91?w=600&q=80'] },
-{ title:'Hasbro Jenga Classic Wooden Block Tower',       brand:'Hasbro',  category:'Toys & Games',price:1299,discountPrice:849,  stock:55, isPrime:true, isFeatured:false,description:'54 precision wood blocks, stacking tower game, age 6+.',images:['https://images.unsplash.com/photo-1611891487122-207579d67d91?w=600&q=80'] },
-{ title:'Play-Doh Mega Fun Tub 10 Colors Set',           brand:'Play-Doh',category:'Toys & Games',price:1499,discountPrice:999,  stock:70, isPrime:true, isFeatured:false,description:'10 bright colors, 2oz cans, non-toxic, age 2+, creative.',images:['https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?w=600&q=80'] },
-{ title:'Meccano Multi Models 25-in-1 Real Steel Set',   brand:'Meccano', category:'Toys & Games',price:3999,discountPrice:2499, stock:20, isPrime:false,isFeatured:false,description:'338 real metal parts, screws and tools, STEM, age 8+.',images:['https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?w=600&q=80'] },
-{ title:'Ludo King Wooden Deluxe Board Game Magnetic',   brand:'Ludo King',category:'Toys & Games',price:999, discountPrice:599,  stock:90, isPrime:true, isFeatured:false,description:'Magnetic pawns, wood board, 2-4 players, classic Indian game.',images:['https://images.unsplash.com/photo-1611891487122-207579d67d91?w=600&q=80'] },
-{ title:'Fisher-Price Baby Activity Gym Deluxe',         brand:'Fisher-Price',category:'Toys & Games',price:3499,discountPrice:2499,stock:30,isPrime:true,isFeatured:false,description:'5 activity modes, soft toys, music, age 0-12 months, foldable.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'Funskool Chess Set Wooden Classic 12"',         brand:'Funskool',category:'Toys & Games',price:1299,discountPrice:799,  stock:40, isPrime:false,isFeatured:false,description:'Wooden folding board, weighted pieces, 12", 2 players.',images:['https://images.unsplash.com/photo-1611891487122-207579d67d91?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// BEAUTY — 20 products
-// ══════════════════════════════════════════════════════
-{ title:"L'Oreal True Match Foundation SPF17 30ml",      brand:"L'Oreal", category:'Beauty', price:1099,discountPrice:749,  stock:100,isPrime:true, isFeatured:true, description:'Skin-true formula, SPF17, blends like second skin, 33 shades.',images:['https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80'] },
-{ title:'Maybelline Fit Me Matte Poreless Foundation',   brand:'Maybelline',category:'Beauty',price:599, discountPrice:399,  stock:120,isPrime:true, isFeatured:false,description:'8hr wear, shine-free, normal to oily skin, 30ml.',images:['https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&q=80'] },
-{ title:'MAC Ruby Woo Retro Matte Lipstick 3g',          brand:'MAC',     category:'Beauty', price:1950,discountPrice:1750, stock:50, isPrime:false,isFeatured:true, description:'Iconic blue-toned red, retro matte, highly pigmented.',images:['https://images.unsplash.com/photo-1586495777744-4e6232bf08eb?w=600&q=80'] },
-{ title:'Lakme Eyeconic Kajal Twin Pack Black',           brand:'Lakme',   category:'Beauty', price:349, discountPrice:249,  stock:200,isPrime:true, isFeatured:false,description:'Waterproof, smudge-proof, 16hr stay, kohl formula.',images:['https://images.unsplash.com/photo-1600428877878-1a0fd85beda8?w=600&q=80'] },
-{ title:'The Body Shop Tea Tree Facial Oil 10ml',        brand:'The Body Shop',category:'Beauty',price:995,discountPrice:795,stock:80,isPrime:false,isFeatured:false,description:'100% natural, purifying, acne-fighting, blemish control.',images:['https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600&q=80'] },
-{ title:'Neutrogena Hydro Boost Water Gel 50g',          brand:'Neutrogena',category:'Beauty',price:999,discountPrice:749, stock:90, isPrime:true, isFeatured:false,description:'Hyaluronic acid, oil-free, non-comedogenic, 24hr hydration.',images:['https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80'] },
-{ title:'Dove Intense Moisture Body Lotion 400ml',       brand:'Dove',    category:'Beauty', price:399, discountPrice:299,  stock:160,isPrime:true, isFeatured:false,description:'Nutrium Moisture, dry skin relief, 48hr moisturisation.',images:['https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600&q=80'] },
-{ title:'Pantene Pro-V Total Damage Care Shampoo 675ml', brand:'Pantene', category:'Beauty', price:499, discountPrice:349,  stock:140,isPrime:true, isFeatured:false,description:'Pro-Vitamin formula, repairs 10 damage symptoms, stronger hair.',images:['https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&q=80'] },
-{ title:'Himalaya Men Intense Charcoal Face Wash 100ml', brand:'Himalaya',category:'Beauty', price:149, discountPrice:109,  stock:200,isPrime:true, isFeatured:false,description:'Activated charcoal, neem, deep cleanse, oil-free for men.',images:['https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80'] },
-{ title:'Biotique Bio Papaya Revitalizing Tan Removal',  brand:'Biotique',category:'Beauty', price:299, discountPrice:199,  stock:150,isPrime:true, isFeatured:false,description:'Papaya enzymes, gentle scrub, ayurvedic, glowing skin.',images:['https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// FURNITURE — 15 products
-// ══════════════════════════════════════════════════════
-{ title:'Wakefit Orthopaedic Memory Foam Mattress Queen',brand:'Wakefit', category:'Furniture',price:14999,discountPrice:10999,stock:15,isPrime:true, isFeatured:true, description:'7-zone support, memory foam, 10yr warranty, 100-night trial.',images:['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80'] },
-{ title:'Nilkamal Computer Desk Engineered Wood Brown',  brand:'Nilkamal',category:'Furniture',price:7990, discountPrice:5490, stock:20, isPrime:false,isFeatured:false,description:'MDF, 1 drawer, keyboard tray, cable management, easy assembly.',images:['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80'] },
-{ title:'Godrej Interio Ergonomic Study Chair Mesh',     brand:'Godrej',  category:'Furniture',price:12990,discountPrice:9490, stock:12, isPrime:true, isFeatured:true, description:'Adjustable lumbar, mesh back, height adjust, 5-star base.',images:['https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&q=80'] },
-{ title:'Urban Ladder 3-Seater Sofa Fabric Grey',        brand:'Urban Ladder',category:'Furniture',price:39990,discountPrice:29990,stock:6,isPrime:false,isFeatured:true,description:'Solid wood legs, high-density foam, stain-resistant fabric.',images:['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80'] },
-{ title:'HomeTown King Size Bed Hydraulic Storage',      brand:'HomeTown',category:'Furniture',price:24990,discountPrice:17990,stock:5, isPrime:true, isFeatured:false,description:'Hydraulic gas lift storage, engineered wood, walnut finish.',images:['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80'] },
-{ title:'Pepperfry Sheesham Wood Coffee Table 2-Shelf',  brand:'Pepperfry',category:'Furniture',price:9990,discountPrice:6990, stock:8, isPrime:false,isFeatured:false,description:'Solid sheesham wood, 2 open shelves, natural finish, 120x60cm.',images:['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// GROCERY — 10 products
-// ══════════════════════════════════════════════════════
-{ title:'India Gate Basmati Rice Extra Long 5kg',        brand:'India Gate',category:'Grocery',price:799,discountPrice:649,  stock:300,isPrime:true, isFeatured:true, description:'Extra long grain, aged, perfect for biryani, pulao, fried rice.',images:['https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80'] },
-{ title:'Tata Salt Iodised Vacuum Packed 1kg x6',        brand:'Tata',    category:'Grocery', price:144, discountPrice:120,  stock:500,isPrime:true, isFeatured:false,description:'Iodised, vacuum packed, essential mineral, 1kg each pack.',images:['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80'] },
-{ title:'Amul Pasteurised Salted Table Butter 500g',     brand:'Amul',    category:'Grocery', price:265, discountPrice:245,  stock:400,isPrime:true, isFeatured:false,description:'Pasteurised, rich taste, salted, perfect for cooking, toast.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'Nescafe Classic Instant Coffee Jar 200g',       brand:'Nescafe', category:'Grocery', price:499, discountPrice:399,  stock:250,isPrime:true, isFeatured:true, description:'100% pure coffee, rich aroma, smooth taste, glass jar.',images:['https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80'] },
-{ title:'Organic Tattva Turmeric Powder 500g',           brand:'Organic Tattva',category:'Grocery',price:299,discountPrice:199,stock:200,isPrime:false,isFeatured:false,description:'Certified organic, high curcumin, no preservatives, bright yellow.',images:['https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80'] },
-
-// ══════════════════════════════════════════════════════
-// AUTOMOTIVE — 10 products
-// ══════════════════════════════════════════════════════
-{ title:'Michelin Primacy 4 205/55 R16 91V Tyre',        brand:'Michelin',category:'Automotive',price:8990,discountPrice:7490,stock:30,isPrime:false,isFeatured:true, description:'A-grade wet braking, long lasting, low rolling resistance.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'Varta D15 60Ah Car Battery Maintenance Free',   brand:'Varta',   category:'Automotive',price:5990,discountPrice:4990,stock:20,isPrime:true, isFeatured:false,description:'60Ah, 540A CCA, maintenance free, 2yr warranty, reliable.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'3M Scotch-Brite Car Wash Kit 6-in-1',           brand:'3M',      category:'Automotive',price:1299,discountPrice:899, stock:60, isPrime:true, isFeatured:false,description:'Shampoo, wax, microfiber cloth, wheel cleaner, bug remover.',images:['https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=600&q=80'] },
-{ title:'Garmin DriveSmart 65 GPS Navigator 6.95"',      brand:'Garmin',  category:'Automotive',price:19990,discountPrice:14990,stock:15,isPrime:true,isFeatured:true, description:'6.95" display, lifetime maps, traffic alerts, voice command.',images:['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'] },
-{ title:'Bosch iDrive 12000mAh Car Jump Starter',        brand:'Bosch',   category:'Automotive',price:6990,discountPrice:4990,stock:25,isPrime:false,isFeatured:false,description:'400A peak current, USB-C, LED torch, safe spark-proof clamps.',images:['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&q=80'] },
-
+  // ── TOYS & GAMES ────────────────────────────────────────────
+  {
+    title: 'LEGO Technic Land Rover Defender (2573 Pieces)',
+    description: 'LEGO Technic 42110 Land Rover Defender with working suspension, 4-speed gearbox and diff lock. 2573 pieces.',
+    price: 24999, discountPrice: 19999, category: 'Toys & Games', brand: 'LEGO',
+    stock: 20, isPrime: true, isFeatured: true,
+    images: [
+      'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?w=500&q=80',
+      'https://images.unsplash.com/photo-1563215264-5735db9d6d35?w=500&q=80',
+      'https://images.unsplash.com/photo-1580126759715-db1a967c3095?w=500&q=80'
+    ],
+    tags: ['lego','technic','toys','building'],
+    specs: new Map([['Pieces','2573'],['Age','11+'],['Dimensions','42x22x20cm']])
+  },
+  {
+    title: 'Funskool Monopoly Classic Board Game',
+    description: 'Classic Monopoly board game for 2-8 players. Includes board, 8 tokens, 28 title deed cards, money, dice.',
+    price: 1299, discountPrice: 799, category: 'Toys & Games', brand: 'Funskool',
+    stock: 80, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1611891487122-207579d67d91?w=500&q=80',
+      'https://images.unsplash.com/photo-1634316713788-b2a6d713a290?w=500&q=80',
+      'https://images.unsplash.com/photo-1610890716171-6b1e847cdcc7?w=500&q=80'
+    ],
+    tags: ['monopoly','board-game','family','funskool'],
+    specs: new Map([['Players','2-8'],['Age','8+'],['Duration','60-180 min']])
+  },
+  {
+    title: 'Hot Wheels 20-Car Gift Pack (Assorted)',
+    description: '20 die-cast Hot Wheels cars in 1:64 scale. Assorted designs and colors, perfect collectible gift set.',
+    price: 1299, discountPrice: 849, category: 'Toys & Games', brand: 'Hot Wheels',
+    stock: 60, isPrime: false, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=500&q=80',
+      'https://images.unsplash.com/photo-1605809710328-98e3b128537d?w=500&q=80',
+      'https://images.unsplash.com/photo-1585832770579-28c9bba689f1?w=500&q=80'
+    ],
+    tags: ['hotwheels','cars','toys','diecast'],
+    specs: new Map([['Scale','1:64'],['Count','20 cars'],['Age','3+'],['Material','Die-cast Metal']])
+  },
+  {
+    title: 'Rubik\'s Cube 3x3 Original (Speed Cube)',
+    description: 'Original Rubik\'s 3x3 cube with smooth mechanism, vibrant colors, develops problem solving skills.',
+    price: 499, discountPrice: 349, category: 'Toys & Games', brand: "Rubik's",
+    stock: 150, isPrime: true, isFeatured: false,
+    images: [
+      'https://images.unsplash.com/photo-1591991564021-0f9d3e51b0cf?w=500&q=80',
+      'https://images.unsplash.com/photo-1584852026888-038237e19f9d?w=500&q=80',
+      'https://images.unsplash.com/photo-1584852109673-863a35bfa373?w=500&q=80'
+    ],
+    tags: ['rubiks','puzzle','cube','brain-game'],
+    specs: new Map([['Size','3x3x3'],['Age','8+'],['Material','ABS Plastic']])
+  },
 ];
 
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
+
+    // Clear old data
     await Product.deleteMany({});
     await Category.deleteMany({});
     await User.deleteOne({ email: 'admin@shopzone.com' });
-    console.log('🗑️  Cleared existing data');
+    console.log('Cleared existing data');
+
+    // Insert categories
     await Category.insertMany(categories);
-    console.log(`✅ Seeded ${categories.length} categories`);
-    const toInsert = products.map(p => ({
-      ...p,
-      avgRating:  parseFloat((Math.random() * 2 + 3).toFixed(1)),
-      numReviews: Math.floor(Math.random() * 2000) + 50,
-      isActive:   true,
-      tags:       [],
-      specs:      new Map(),
-    }));
-    await Product.insertMany(toInsert);
-    console.log(`✅ Seeded ${products.length} products with unique images!`);
+    console.log('Seeded 6 categories');
+
+    // --- THE 300+ PRODUCT MULTIPLIER ---
+    const allProductsToInsert = [];
+    const suffixes = ['', 'Pro', 'Max', 'Ultra', 'V2', 'Edition', 'Plus', 'Elite'];
+    
+    // We will loop 8 times over your 42 base products to generate exactly 336 items!
+    for (let i = 0; i < 8; i++) {
+      baseProducts.forEach(baseProduct => {
+        // Pick a suffix based on the loop index
+        const currentSuffix = suffixes[i];
+        const newTitle = currentSuffix ? `${baseProduct.title} ${currentSuffix}` : baseProduct.title;
+        
+        // Randomize the price very slightly for variety
+        const priceModifier = 1 + (Math.random() * 0.2 - 0.1); 
+        const newPrice = Math.round(baseProduct.price * priceModifier);
+        const newDiscountPrice = Math.round(baseProduct.discountPrice * priceModifier);
+
+        allProductsToInsert.push({
+          ...baseProduct,
+          title: newTitle,
+          price: newPrice,
+          discountPrice: newDiscountPrice,
+          stock: Math.floor(Math.random() * 150) + 1,
+          avgRating: (Math.random() * 2 + 3).toFixed(1), 
+          numReviews: Math.floor(Math.random() * 500) + 10,
+          isActive: true,
+          isFeatured: Math.random() > 0.8, 
+          isPrime: Math.random() > 0.3     
+        });
+      });
+    }
+
+    // Insert all generated products into MongoDB in one batch
+    await Product.insertMany(allProductsToInsert);
+    console.log(`🚀 Successfully seeded ${allProductsToInsert.length} real products with multiple images!`);
+
+    // Create admin user
     const admin = new User({
-      name: 'Anuj Admin', email: 'admin@shopzone.com',
-      passwordHash: 'Admin@123456', role: 'admin',
-      isVerified: true, mobile: '7015542002',
+      name: 'Anuj Admin',
+      email: 'admin@shopzone.com',
+      passwordHash: 'Admin@123456',
+      role: 'admin',
+      isVerified: true,
+      mobile: '7015542002',
     });
     await admin.save();
-    console.log('✅ Admin created: admin@shopzone.com / Admin@123456');
-    console.log('\n🎉 Database seeded successfully!');
+    console.log('Admin user created: admin@shopzone.com');
+
+    console.log('\nDatabase seeded successfully!');
+    console.log('Admin Email:    admin@shopzone.com');
+    console.log('Admin Password: Admin@123456');
     process.exit(0);
   } catch (err) {
-    console.error('❌ Seed error:', err.message);
+    console.error('Seed error:', err.message);
     process.exit(1);
   }
 }
+
 seed();
