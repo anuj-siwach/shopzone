@@ -1,3 +1,4 @@
+// client/src/api/axios.js
 import axios from 'axios';
 
 const api = axios.create({
@@ -12,14 +13,14 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-// Handle 401 globally — clear token and redirect
+// Handle 401 globally
 api.interceptors.response.use(
   res => res,
   err => {
     if (err.response?.status === 401) {
       localStorage.removeItem('sz_token');
       localStorage.removeItem('sz_user');
-      window.location.href = '/login';
+      window.location.href = '/';
     }
     return Promise.reject(err);
   }
