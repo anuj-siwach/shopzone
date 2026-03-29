@@ -11,6 +11,23 @@ import api from './api/axios';
 const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
 const stars = r => { let s = ''; for(let i=1;i<=5;i++) s += i<=Math.floor(r)?'★':(i-.5<=r?'★':'☆'); return s; };
 
+
+// ──────────────────────────────────────────────────────────────
+// DARK / LIGHT THEME HOOK
+// ──────────────────────────────────────────────────────────────
+function useTheme() {
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('sz_theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    localStorage.setItem('sz_theme', dark ? 'dark' : 'light');
+  }, [dark]);
+  return [dark, setDark];
+}
+
 // ──────────────────────────────────────────────────────────────
 // TOAST
 // ──────────────────────────────────────────────────────────────
@@ -42,24 +59,31 @@ function ProductCard({ product, onAddToCart, onNavigate }) {
   const { _id, title, brand, price, discountPrice, images, avgRating, numReviews, isPrime, stock } = product;
   const finalPrice = discountPrice || price;
   const disc = discountPrice ? Math.round((1 - discountPrice / price) * 100) : 0;
-  const img  = images?.[0] || `https://placehold.co/200x200/EAEDED/333?text=${encodeURIComponent(brand||'Product')}`;
+  const img  = images?.[0] || `https://placehold.co/400x400/f5f5f0/888?text=${encodeURIComponent(brand||'Product')}`;
 
   return (
     <div className="p-card" onClick={() => onNavigate('product', _id)}>
-      {disc > 0 && <span className="badge-disc">-{disc}%</span>}
-      {isPrime && <span className="badge-prime">prime</span>}
-      <img src={img} alt={title} className="p-img" onError={e => { e.target.src = `https://placehold.co/200x200/EAEDED/333?text=Product`; }} />
-      <div className="p-brand">{brand}</div>
-      <div className="p-name">{title}</div>
-      <StarRating value={avgRating} count={numReviews} />
-      <div className="price-row">
-        <span className="price">{fmt(finalPrice)}</span>
-        {disc > 0 && <><span className="orig">{fmt(price)}</span><span className="disc-pct">-{disc}%</span></>}
+      <div className="p-card-img-wrap">
+        {disc > 0 && <span className="badge-disc">-{disc}%</span>}
+        {isPrime && <span className="badge-prime">prime</span>}
+        <img src={img} alt={title} className="p-img" onError={e => { e.target.src = `https://placehold.co/400x400/f5f5f0/888?text=Product`; }} />
+        <div className="p-overlay">
+          <button className="" onClick={e => { e.stopPropagation(); onNavigate('product', _id); }}>Quick View</button>
+        </div>
       </div>
-      {stock > 0 && stock < 10 ? <div className="stock-low">Only {stock} left!</div> : stock > 0 ? <div className="stock-ok">✓ In Stock</div> : null}
-      <button className="atc-btn" disabled={stock === 0} onClick={e => { e.stopPropagation(); onAddToCart(product); }}>
-        {stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-      </button>
+      <div className="p-info">
+        <div className="p-brand">{brand}</div>
+        <div className="p-name">{title}</div>
+        <StarRating value={avgRating} count={numReviews} />
+        <div className="price-row">
+          <span className="price">{fmt(finalPrice)}</span>
+          {disc > 0 && <><span className="orig">{fmt(price)}</span><span className="disc-pct">-{disc}%</span></>}
+        </div>
+        {stock > 0 && stock < 10 ? <div className="stock-low">Only {stock} left!</div> : stock > 0 ? <div className="stock-ok">✓ In Stock</div> : null}
+        <button className="atc-btn" disabled={stock === 0} onClick={e => { e.stopPropagation(); onAddToCart(product); }}>
+          {stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -112,17 +136,24 @@ function CartSidebar({ open, onClose, onCheckout }) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// NAVBAR
+// NAVBAR — Addina style with dark/light toggle
 // ──────────────────────────────────────────────────────────────
-function Navbar({ onNavigate, onCartOpen, onSearch, cartCount }) {
+function Navbar({ onNavigate, onCartOpen, onSearch, cartCount, theme, onThemeToggle }) {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [q, setQ] = useState('');
 
   return (
     <>
+      <div className="announce-bar">
+        <span>✨ Use code <strong>ANUJ20</strong> for 20% off</span>
+        <span className="announce-sep"> | </span>
+        <span>🚚 Free shipping above ₹499</span>
+        <span className="announce-sep"> | </span>
+        <span>🔒 Secure Payments</span>
+      </div>
       <nav className="navbar-top">
-        <div className="logo" onClick={() => onNavigate('home')}>shop<span>Zone</span></div>
+        <div className="logo" onClick={() => onNavigate('home')}>SHOP<span>ZONE</span></div>
         <div className="search-bar">
           <select defaultValue="All"><option>All</option><option>Electronics</option><option>Fashion</option><option>Home & Kitchen</option><option>Books</option><option>Sports</option></select>
           <input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && onSearch(q)} placeholder="Search products, brands…" />
@@ -131,40 +162,65 @@ function Navbar({ onNavigate, onCartOpen, onSearch, cartCount }) {
         <div className="nav-actions">
           {user
             ? <button className="nav-btn" onClick={() => onNavigate('profile')}><small>Hello, {user.name?.split(' ')[0]}</small><strong>Account</strong></button>
-            : <button className="nav-btn" onClick={() => onNavigate('login')}><small>Hello, Sign in</small><strong>Account &amp; Lists ▾</strong></button>
+            : <button className="nav-btn" onClick={() => onNavigate('login')}><small>Hello, Sign in</small><strong>Account ▾</strong></button>
           }
-          <button className="nav-btn" onClick={() => onNavigate('orders')}><small>Returns</small><strong>&amp; Orders</strong></button>
-          {user?.role === 'admin' && <button className="nav-btn" onClick={() => onNavigate('admin')} style={{color:'#FF9900'}}>Admin</button>}
+          <button className="nav-btn" onClick={() => onNavigate('orders')}><small>Returns</small><strong>& Orders</strong></button>
+          {user?.role === 'admin' && <button className="nav-btn" onClick={() => onNavigate('admin')} style={{color:'var(--gold)'}}>Admin</button>}
           {user && <button className="nav-btn" onClick={() => dispatch(logout())}>Logout</button>}
           <button className="nav-btn cart-btn" onClick={onCartOpen}>
             🛒<span className="cart-badge">{cartCount}</span><strong>Cart</strong>
           </button>
+          <div className="theme-toggle-wrap">
+            <span className="theme-icon">{theme === 'dark' ? '🌙' : '☀️'}</span>
+            <button className="theme-toggle" onClick={onThemeToggle} title="Toggle dark/light mode" />
+          </div>
         </div>
       </nav>
       <div className="navbar-sub">
-        {['☰ All','Electronics','Fashion','Home & Kitchen','Books','Sports','Toys & Games','Deals 🔥'].map(item => (
+        {['All','Electronics','Fashion','Home & Kitchen','Books','Sports','Toys & Games','Beauty','Deals 🔥'].map(item => (
           <button key={item} className="sub-item" onClick={() => {
-            if (item === '☰ All') onNavigate('home');
-            else if (!item.includes('🔥') && !item.includes('☰')) onNavigate('listing', { category: item.replace(' & Kitchen','').replace(' & Games','') });
+            if (item === 'All') onNavigate('home');
+            else if (!item.includes('🔥')) onNavigate('listing', { category: item });
           }}>{item}</button>
         ))}
       </div>
     </>
   );
 }
-
 // ──────────────────────────────────────────────────────────────
-// HERO SLIDER
+// HERO SLIDER — Addina Style
 // ──────────────────────────────────────────────────────────────
 function Hero({ onNavigate }) {
   const [idx, setIdx] = useState(0);
   const slides = [
-    { cls: 's0', badge: 'NEW ARRIVALS', title: 'The Future of Electronics', sub: 'Discover latest phones, laptops & more — up to 40% off', cta: 'Shop Electronics', cat: 'Electronics' },
-    { cls: 's1', badge: 'FLASH SALE', title: 'Fashion That Speaks Volumes', sub: 'Trending styles from top brands at unbeatable prices', cta: 'Explore Fashion', cat: 'Fashion' },
-    { cls: 's2', badge: 'BEST SELLERS', title: 'Transform Your Home & Kitchen', sub: 'Premium home essentials with free delivery above ₹499', cta: 'Shop Home', cat: 'Home' },
+    {
+      cls: 's0',
+      eyebrow: 'New Collection 2025',
+      title: <>Discover <em>Premium</em><br/>Electronics &<br/>Gadgets</>,
+      sub: 'Latest phones, laptops & smart devices — up to 40% off top brands.',
+      cta: 'Shop Electronics', cta2: 'New Arrivals',
+      cat: 'Electronics',
+    },
+    {
+      cls: 's1',
+      eyebrow: 'Curated Fashion',
+      title: <>Style That<br/><em>Speaks</em><br/>Volumes</>,
+      sub: 'Trending styles from Levi's, Nike, Adidas and more at unbeatable prices.',
+      cta: 'Explore Fashion', cta2: 'View Lookbook',
+      cat: 'Fashion',
+    },
+    {
+      cls: 's2',
+      eyebrow: 'Best Sellers',
+      title: <>Transform Your<br/><em>Home</em> &<br/>Kitchen</>,
+      sub: 'Premium home essentials curated for modern living. Free delivery above ₹999.',
+      cta: 'Shop Home', cta2: 'See Deals',
+      cat: 'Home & Kitchen',
+    },
   ];
+
   useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % slides.length), 5000);
+    const t = setInterval(() => setIdx(i => (i + 1) % slides.length), 5500);
     return () => clearInterval(t);
   }, []);
   const go = d => setIdx(i => (i + d + slides.length) % slides.length);
@@ -175,11 +231,15 @@ function Hero({ onNavigate }) {
         {slides.map((s, i) => (
           <div key={i} className={`hero-slide ${s.cls}`}>
             <div className="hero-content">
-              <div className="hero-badge">{s.badge}</div>
+              <div className="hero-eyebrow">{s.eyebrow}</div>
               <h1 className="hero-title">{s.title}</h1>
               <p className="hero-sub">{s.sub}</p>
-              <button className="hero-cta" onClick={() => onNavigate('listing', { category: s.cat })}>{s.cta} →</button>
+              <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                <button className="hero-cta" onClick={() => onNavigate('listing', { category: s.cat })}>{s.cta} →</button>
+                <button className="hero-cta-2" onClick={() => onNavigate('listing', { category: s.cat })}>{s.cta2}</button>
+              </div>
             </div>
+            {i === 0 && <div className="hero-badge"><span>FREE</span><span>Shipping</span></div>}
           </div>
         ))}
       </div>
@@ -243,22 +303,114 @@ function HomePage({ onNavigate, onAddToCart }) {
   return (
     <div>
       <Hero onNavigate={onNavigate} />
-      <div className="container page-content">
-        <div className="deal-strip">
-          <div className="deal-title">Today's<br /><span>Deals</span></div>
-          {dealItems.map(d => (
-            <div key={d.label} className="deal-item" onClick={() => onNavigate('listing', { category: d.cat })}>
-              <div className="deal-item-img">{d.emoji}</div>
-              <div className="deal-item-lbl">{d.label}</div>
-              <div className="deal-item-off">{d.off}</div>
-            </div>
-          ))}
+
+      {/* Category grid */}
+      <section className="home-section-tinted">
+        <div className="container">
+          <div className="section-hdr">
+            <p className="section-eyebrow">Browse</p>
+            <h2>Shop by Category</h2>
+          </div>
+          <div className="category-strip">
+            {[{name:'Electronics',icon:'📱'},{name:'Fashion',icon:'👗'},{name:'Home & Kitchen',icon:'🛋️'},{name:'Books',icon:'📚'},{name:'Sports',icon:'⚽'},{name:'Beauty',icon:'✨'}].map(c => (
+              <div key={c.name} className="cat-pill" onClick={() => onNavigate('listing',{category:c.name})}>
+                <div className="cat-pill-icon">{c.icon}</div>
+                <div className="cat-pill-name">{c.name}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <Section title="🔌 Electronics — Best Sellers" key2="electronics" cat="Electronics" />
-        <Section title="👗 Fashion — Top Picks" key2="fashion" cat="Fashion" />
-        <Section title="🏠 Home & Kitchen" key2="home" cat="Home & Kitchen" />
-        <Section title="📚 Books" key2="books" cat="Books" />
-      </div>
+      </section>
+
+      {/* Electronics */}
+      {sections.electronics?.length > 0 && (
+        <section className="home-section">
+          <div className="container">
+            <div className="section-hdr">
+              <p className="section-eyebrow">Tech & Gadgets</p>
+              <h2>Electronics</h2>
+            </div>
+            <div className="product-grid">
+              {sections.electronics.slice(0,4).map(p=><ProductCard key={p._id} product={p} onAddToCart={onAddToCart} onNavigate={onNavigate}/>)}
+            </div>
+            <div style={{textAlign:'center',marginTop:36}}>
+              <button className="see-all" onClick={()=>onNavigate('listing',{category:'Electronics'})}>View All Electronics →</button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Fashion */}
+      {sections.fashion?.length > 0 && (
+        <section className="home-section-tinted">
+          <div className="container">
+            <div className="section-hdr">
+              <p className="section-eyebrow">Style & Trends</p>
+              <h2>Fashion</h2>
+            </div>
+            <div className="product-grid">
+              {sections.fashion.slice(0,4).map(p=><ProductCard key={p._id} product={p} onAddToCart={onAddToCart} onNavigate={onNavigate}/>)}
+            </div>
+            <div style={{textAlign:'center',marginTop:36}}>
+              <button className="see-all" onClick={()=>onNavigate('listing',{category:'Fashion'})}>View All Fashion →</button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Why us */}
+      <section className="home-section-dark">
+        <div className="why-grid">
+          <div className="why-card"><div className="why-icon">🎁</div><h3>Premium Quality</h3><p>Every product carefully curated and quality-checked before reaching you.</p></div>
+          <div className="why-card"><div className="why-icon">🚚</div><h3>Fast Delivery</h3><p>Swift and reliable delivery across India with real-time order tracking.</p></div>
+          <div className="why-card"><div className="why-icon">🔒</div><h3>Secure Payments</h3><p>100% safe and encrypted transactions with multiple payment options.</p></div>
+          <div className="why-card"><div className="why-icon">💬</div><h3>24/7 Support</h3><p>Our team is always here to help with any questions or concerns.</p></div>
+        </div>
+      </section>
+
+      {/* Home & Books */}
+      {sections.home?.length > 0 && (
+        <section className="home-section">
+          <div className="container">
+            <div className="section-hdr">
+              <p className="section-eyebrow">For Your Home</p>
+              <h2>Home & Kitchen</h2>
+            </div>
+            <div className="product-grid">
+              {sections.home.slice(0,4).map(p=><ProductCard key={p._id} product={p} onAddToCart={onAddToCart} onNavigate={onNavigate}/>)}
+            </div>
+            <div style={{textAlign:'center',marginTop:36}}>
+              <button className="see-all" onClick={()=>onNavigate('listing',{category:'Home & Kitchen'})}>View All Home →</button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CTA Banner */}
+      <section className="cta-banner">
+        <p className="section-eyebrow">Limited Time Offer</p>
+        <h2>Get 20% Off Your First Order</h2>
+        <p>Sign up and use code <strong>ANUJ20</strong> at checkout</p>
+        <button className="btn-primary" style={{marginTop:8}} onClick={()=>onNavigate('register')}>Create Free Account →</button>
+      </section>
+
+      {/* Books */}
+      {sections.books?.length > 0 && (
+        <section className="home-section-tinted">
+          <div className="container">
+            <div className="section-hdr">
+              <p className="section-eyebrow">Knowledge & Growth</p>
+              <h2>Books</h2>
+            </div>
+            <div className="product-grid">
+              {sections.books.slice(0,4).map(p=><ProductCard key={p._id} product={p} onAddToCart={onAddToCart} onNavigate={onNavigate}/>)}
+            </div>
+            <div style={{textAlign:'center',marginTop:36}}>
+              <button className="see-all" onClick={()=>onNavigate('listing',{category:'Books'})}>View All Books →</button>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -502,6 +654,7 @@ function LoginPage({ onNavigate }) {
   const dispatch = useDispatch();
   const { loading, error } = useSelector(s => s.user);
   const [form, setForm]   = useState({ email: '', password: '' });
+  const [showPass, setShowPass] = useState(false);
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -510,32 +663,64 @@ function LoginPage({ onNavigate }) {
   };
 
   return (
-    <div className="container page-content">
-      <div className="form-card">
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div className="logo" style={{ display: 'inline', fontSize: 28 }}>shop<span>Zone</span></div>
+    <div className="login-split">
+      {/* Left decorative panel */}
+      <div className="login-left-panel">
+        <div className="login-left-brand">shop<span>Zone</span></div>
+        <div style={{position:'relative',flex:1,display:'flex',alignItems:'flex-end',paddingBottom:40}}>
+          <div className="login-art-circle c1" />
+          <div className="login-art-circle c2" />
+          <div className="login-art-circle c3" />
+          <p className="login-left-tagline">Curated for<br/>the modern<br/>lifestyle</p>
         </div>
-        <h2>Sign In</h2>
-        <p>Access your account</p>
-        {error && <div className="form-err">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required placeholder="Enter your email" /></div>
-          <div className="form-group"><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required placeholder="••••••••" /></div>
-          <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Signing in…' : 'Sign In'}</button>
-        </form>
-        <button className="form-link" onClick={() => onNavigate('register')}>New customer? Create account →</button>
-        <button className="form-link" onClick={() => onNavigate('forgot')} style={{ marginTop: 4 }}>Forgot your password?</button>
+      </div>
+
+      {/* Right form panel */}
+      <div className="login-right-panel">
+        <div className="login-box">
+          <h1>Welcome back</h1>
+          <p className="sub">Sign in to your ShopZone account</p>
+
+          {error && <div className="form-err">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Email Address</label>
+              <input type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} required placeholder="Enter your email" />
+            </div>
+            <div className="form-group">
+              <label>
+                Password
+                <button type="button" className="show-pass" onClick={() => setShowPass(s=>!s)}>
+                  {showPass ? 'Hide' : 'Show'}
+                </button>
+              </label>
+              <input type={showPass ? 'text' : 'password'} value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} required placeholder="••••••••" />
+            </div>
+            <div className="forgot-link">
+              <a href="#" onClick={e=>{e.preventDefault();}}>Forgot password?</a>
+            </div>
+            <button type="submit" className="btn-primary" style={{width:'100%',justifyContent:'center'}} disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign In →'}
+            </button>
+          </form>
+
+          <div className="divider-or"><span>or</span></div>
+
+          <button className="btn-secondary" style={{width:'100%',justifyContent:'center'}} onClick={()=>onNavigate('register')}>
+            Create New Account
+          </button>
+
+          <p style={{textAlign:'center',fontSize:13,color:'var(--text3)',marginTop:16,lineHeight:1.6}}>
+            By signing in you agree to ShopZone&apos;s<br/>
+            <span style={{color:'var(--gold)',cursor:'pointer',borderBottom:'1px solid var(--gold)'}}>Terms of Service</span> and <span style={{color:'var(--gold)',cursor:'pointer',borderBottom:'1px solid var(--gold)'}}>Privacy Policy</span>
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
-// Import loginUser from slice
-import { loginUser } from './store/userSlice';
-
-// ──────────────────────────────────────────────────────────────
-// REGISTER PAGE — No OTP, direct login after registration
-// ──────────────────────────────────────────────────────────────
 function RegisterPage({ onNavigate }) {
   const [form, setForm]       = useState({ name: '', email: '', password: '', mobile: '' });
   const [msg, setMsg]         = useState({ type: '', text: '' });
@@ -1295,38 +1480,72 @@ function AdminPage({ onNavigate }) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// FOOTER
+// FOOTER — Addina style dark footer
 // ──────────────────────────────────────────────────────────────
 function Footer({ onNavigate }) {
   return (
-    <footer>
-      <div className="footer-top" onClick={() => window.scrollTo({top:0,behavior:'smooth'})}>▲ Back to top</div>
-      <div className="footer-grid">
-        <div className="footer-col"><h4>Get to Know Us</h4><a>About ShopZone</a><a>Careers</a><a>Press</a><a>Blog</a></div>
-        <div className="footer-col"><h4>Make Money with Us</h4><a>Sell Products</a><a>Become Affiliate</a><a>Advertise</a><a>Fulfilment</a></div>
-        <div className="footer-col"><h4>Payment Products</h4><a>ShopZone Pay</a><a>EMI Options</a><a>Gift Cards</a><a>Reload Balance</a></div>
+    <footer className="site-footer">
+      <div className="footer-top">
+        {/* Brand col */}
+        <div>
+          <div className="footer-brand">shop<span>Zone</span></div>
+          <p className="footer-desc">Curated selections for modern living. Premium products delivered across India with care and speed.</p>
+          <div className="newsletter">
+            <input placeholder="Your email address" />
+            <button>Subscribe</button>
+          </div>
+        </div>
+        {/* Shop */}
         <div className="footer-col">
-          <h4>Let Us Help You</h4>
-          <a onClick={() => onNavigate('orders')}>Your Orders</a>
-          <a onClick={() => onNavigate('profile')}>Your Account</a>
-          <a>Returns Centre</a>
-          <a>Customer Service</a>
+          <h4>Shop</h4>
+          <ul>
+            {['Electronics','Fashion','Home & Kitchen','Books','Sports','Beauty','Furniture'].map(c=>(
+              <li key={c}><button onClick={()=>onNavigate('listing',{category:c})}>{c}</button></li>
+            ))}
+          </ul>
+        </div>
+        {/* Account */}
+        <div className="footer-col">
+          <h4>Account</h4>
+          <ul>
+            <li><button onClick={()=>onNavigate('profile')}>My Profile</button></li>
+            <li><button onClick={()=>onNavigate('orders')}>Orders & Returns</button></li>
+            <li><button onClick={()=>onNavigate('login')}>Sign In</button></li>
+            <li><button onClick={()=>onNavigate('register')}>Create Account</button></li>
+          </ul>
+        </div>
+        {/* Help */}
+        <div className="footer-col">
+          <h4>Help</h4>
+          <ul>
+            <li><button>Contact Us</button></li>
+            <li><button>FAQs</button></li>
+            <li><button>Shipping Policy</button></li>
+            <li><button>Return Policy</button></li>
+            <li><button>Privacy Policy</button></li>
+          </ul>
+        </div>
+        {/* Coupons */}
+        <div className="footer-col">
+          <h4>Offers</h4>
+          <ul>
+            {[['ANUJ20','20% off (min ₹1000)'],['FIRST10','10% off any order'],['SAVE500','₹500 off (min ₹2000)'],['SHOPZONE','15% off (min ₹5000)']].map(([code,desc])=>(
+              <li key={code} style={{marginBottom:12}}>
+                <div style={{fontFamily:'monospace',fontSize:12,color:'var(--gold)',fontWeight:700,letterSpacing:1}}>{code}</div>
+                <div style={{fontSize:11,color:'rgba(255,255,255,.35)',marginTop:2}}>{desc}</div>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
       <div className="footer-bottom">
-        <div style={{marginBottom:8}}>
-          <span className="logo" style={{fontSize:20,display:'inline'}}>shop<span>Zone</span></span>
-        </div>
-        <div>Developer: Anuj | anujsiwach002@gmail.com | +91 7015542002</div>
-        <div style={{marginTop:4}}>Pt. Neki Ram Sharma Govt. College, Rohtak | PGDCA 2025–26</div>
-        <div style={{marginTop:4,color:'#666'}}>© 2026 ShopZone — Academic Project</div>
+        <span>© 2025 ShopZone · All rights reserved.</span>
+        <span>Made with ❤️ by Anuj · PGDCA 2025–26 · Pt. Neki Ram Sharma Govt. College, Rohtak</span>
       </div>
     </footer>
   );
 }
 
-// ──────────────────────────────────────────────────────────────
-// MAIN APP ROUTER
 // ──────────────────────────────────────────────────────────────
 export default function App() {
   const dispatch   = useDispatch();
@@ -1334,6 +1553,7 @@ export default function App() {
   const [page, setPage]       = useState({ name: 'home', params: null });
   const [cartOpen, setCartOpen] = useState(false);
   const [toastMsg, showToast]   = useToast();
+  const [dark, setDark]         = useTheme();
 
   useEffect(() => {
     const token = localStorage.getItem('sz_token');
@@ -1381,6 +1601,8 @@ export default function App() {
         onCartOpen={() => setCartOpen(true)}
         onSearch={q => navigate('listing', { q })}
         cartCount={cartCount}
+        theme={dark ? 'dark' : 'light'}
+        onThemeToggle={() => setDark(d => !d)}
       />
       <CartSidebar
         open={cartOpen}
